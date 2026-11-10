@@ -52,7 +52,7 @@ db.exec(`
   );
 `);
 
-// Always seed / update demo users
+// Auto-seed / Repair demo accounts with INSERT OR REPLACE
 const seedUser = db.prepare('INSERT OR REPLACE INTO users (id, name, dob, role) VALUES (?, ?, ?, ?)');
 seedUser.run('STU101', 'Aarav Sharma', '2003-05-14', 'student');
 seedUser.run('STU102', 'Priya Patel', '2004-08-22', 'candidate');
@@ -80,18 +80,20 @@ if (candCount.count === 0) {
   );
 }
 
-// 1. Case-Insensitive Auth Endpoint
+// 1. Authentication Endpoint (Case-Insensitive Match)
 app.post('/api/auth/login', (req, res) => {
   const { user_id, dob, role } = req.body;
   if (!user_id || !dob || !role) {
     return res.status(400).json({ error: 'User ID, DOB, and Role are required.' });
   }
+
   try {
     const cleanId = String(user_id).trim();
     const cleanDob = String(dob).trim();
     const cleanRole = String(role).trim().toLowerCase();
 
     const user = db.prepare('SELECT * FROM users WHERE UPPER(id) = UPPER(?) AND dob = ? AND LOWER(role) = ?').get(cleanId, cleanDob, cleanRole);
+
     if (!user) {
       return res.status(401).json({ error: 'Invalid ID, Date of Birth, or Role.' });
     }
@@ -107,6 +109,7 @@ app.post('/api/admin/users/create', (req, res) => {
   if (!user_id || !name || !dob || !role) {
     return res.status(400).json({ error: 'All fields (User ID, Name, DOB, Role) are required.' });
   }
+
   try {
     const stmt = db.prepare('INSERT INTO users (id, name, dob, role) VALUES (?, ?, ?, ?)');
     stmt.run(String(user_id).trim(), String(name).trim(), String(dob).trim(), String(role).trim().toLowerCase());
@@ -119,6 +122,7 @@ app.post('/api/admin/users/create', (req, res) => {
   }
 });
 
+// 3. Elections & Candidates API Routes
 app.get('/api/elections', (req, res) => {
   res.json({ success: true, data: db.prepare('SELECT * FROM elections').all() });
 });
@@ -127,14 +131,15 @@ app.get('/api/elections/:id/candidates', (req, res) => {
   res.json({ success: true, data: db.prepare('SELECT * FROM candidates WHERE election_id = ? AND status = "APPROVED"').all(req.params.id) });
 });
 
+// 4. Vote Endpoint
 app.post('/api/vote', (req, res) => {
   const { election_id, voter_id, candidate_id } = req.body;
   if (!election_id || !voter_id || !candidate_id) {
-    return res.status(400).json({ error: 'Missing required parameters.' });
+    return res.status(400).json({ error: 'Missing required voting parameters.' });
   }
   try {
     const info = db.prepare('INSERT INTO votes (election_id, voter_id, candidate_id) VALUES (?, ?, ?)').run(election_id, voter_id, candidate_id);
-    return res.json({ success: true, message: 'Ballot recorded.', correlation_id: info.lastInsertRowid });
+    return res.json({ success: true, message: 'Ballot recorded successfully.', correlation_id: info.lastInsertRowid });
   } catch (err) {
     if (err.message.includes('UNIQUE constraint failed')) {
       return res.status(400).json({ error: 'You have already voted in this election.' });
@@ -143,6 +148,7 @@ app.post('/api/vote', (req, res) => {
   }
 });
 
+// 5. Candidate Application Endpoint
 app.post('/api/candidates/apply', (req, res) => {
   const { election_id, user_id, name, manifesto } = req.body;
   try {
@@ -153,6 +159,7 @@ app.post('/api/candidates/apply', (req, res) => {
   }
 });
 
+// 6. Admin Governance & Election Management
 app.get('/api/admin/candidates/pending', (req, res) => {
   res.json({ success: true, data: db.prepare('SELECT * FROM candidates WHERE status = "PENDING"').all() });
 });

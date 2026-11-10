@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -23,7 +23,7 @@
 
     .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 25px 20px; display: flex; flex-direction: column; gap: 25px; }
     .brand { font-size: 22px; font-weight: 800; color: var(--primary); letter-spacing: 0.5px; }
-    .nav-group { display: flex; flex-direction: column; gap: 10px; }
+    .nav-group { display: flex; flex-direction: column; gap: 8px; }
     .nav-item {
       display: flex; align-items: center; padding: 12px 14px; color: var(--muted);
       border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
@@ -63,20 +63,19 @@
 </head>
 <body>
 
-  <!-- Navigation Sidebar -->
+  <!-- Navigation Sidebar (No Emojis / No Broken Question Marks) -->
   <div class="sidebar">
     <div class="brand">VOTONIC</div>
     <div class="nav-group">
-      <div class="nav-item active" onclick="showSection('home')">Main Portals</div>
-      <div class="nav-item" onclick="showSection('previous-winners')">Previous Winners</div>
+      <div id="nav-home" class="nav-item active" onclick="showSection('home')">Main Portals</div>
+      <div id="nav-previous-winners" class="nav-item" onclick="showSection('previous-winners')">Previous Winners</div>
     </div>
   </div>
 
-  <!-- Workspace Container -->
   <div class="main-wrapper">
     <div class="container">
 
-      <!-- 1. LANDING PAGE WITH Clean PORTALS -->
+      <!-- 1. MAIN LANDING PAGE -->
       <div id="section-home" class="view-section active">
         <h1 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;">Campus Elections & Governance</h1>
         <p style="color: var(--muted); font-size: 14px;">Select your respective portal below to log in.</p>
@@ -108,7 +107,7 @@
         </div>
       </div>
 
-      <!-- 2. PUBLIC PREVIOUS WINNERS -->
+      <!-- 2. PREVIOUS WINNERS -->
       <div id="section-previous-winners" class="view-section">
         <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">Certified Previous Election Winners</h1>
         <div class="card">
@@ -116,7 +115,7 @@
         </div>
       </div>
 
-      <!-- 3. STUDENT PORTAL & DASHBOARD -->
+      <!-- 3. STUDENT PORTAL -->
       <div id="section-login-student" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
           <div class="card-title">Student Portal Authentication</div>
@@ -150,7 +149,7 @@
         </div>
       </div>
 
-      <!-- 4. CANDIDATE PORTAL & DASHBOARD -->
+      <!-- 4. CANDIDATE PORTAL -->
       <div id="section-login-candidate" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
           <div class="card-title">Candidate Portal Authentication</div>
@@ -188,7 +187,7 @@
         </div>
       </div>
 
-      <!-- 5. ADMIN PORTAL & DASHBOARD -->
+      <!-- 5. ADMIN PORTAL -->
       <div id="section-login-admin" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
           <div class="card-title">Administrative Portal Authentication</div>
@@ -240,13 +239,17 @@
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
-      document.getElementById(`section-${sectionId}`).classList.add('active');
+      const secEl = document.getElementById(`section-${sectionId}`);
+      if (secEl) secEl.classList.add('active');
+
+      const navEl = document.getElementById(`nav-${sectionId}`);
+      if (navEl) navEl.classList.add('active');
 
       if (sectionId === 'previous-winners') {
         loadPreviousWinners();
       }
-      if (sectionId === 'home') {
-        document.querySelector('.nav-item:first-child').classList.add('active');
+      if (sectionId === 'home' && document.getElementById('nav-home')) {
+        document.getElementById('nav-home').classList.add('active');
       }
     }
 

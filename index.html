@@ -1,482 +1,418 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Distributed Flash-Poll & Voting Engine</title>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent: #38bdf8;
-            --accent-hover: #0284c7;
-            --danger: #ef4444;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOTONIC | Campus Governance Platform</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --sidebar-bg: #111827;
+      --card-bg: #1f2937;
+      --border: #374151;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+    .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 25px 20px; display: flex; flex-direction: column; gap: 25px; }
+    .brand { font-size: 22px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+    .nav-group { display: flex; flex-direction: column; gap: 8px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 12px 14px; color: var(--muted);
+      border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .nav-item:hover, .nav-item.active { background: var(--card-bg); color: var(--text); border-left: 3px solid var(--primary); }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
+    .main-wrapper { flex: 1; padding: 40px; overflow-y: auto; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 30px; }
+    .portal-card {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 30px;
+      display: flex; flex-direction: column; justify-content: space-between; gap: 20px;
+    }
+    .portal-card:hover { border-color: var(--primary); }
+    .portal-title { font-size: 18px; font-weight: 700; color: var(--primary); }
 
-        .container {
-            max-width: 1000px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 25px; }
+    .card-title { font-size: 16px; font-weight: 600; color: var(--primary); margin-bottom: 15px; }
 
-        header {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .form-control { width: 100%; padding: 11px 14px; background: #0b0f19; border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; }
+    
+    .btn { padding: 11px 20px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; display: inline-block; text-align: center; width: 100%; }
+    .btn:hover { background: var(--primary-hover); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
 
-        h1 {
-            font-size: 1.5rem;
-            color: var(--accent);
-            margin-bottom: 5px;
-        }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+    th { color: var(--muted); background: #0b0f19; }
 
-        .subtitle {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .pipeline-banner {
-            margin-top: 15px;
-            padding: 10px;
-            background: #090d16;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-family: monospace;
-            color: var(--accent);
-            border: 1px dashed var(--border);
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr; }
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        h2 {
-            font-size: 1.1rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .candidate-card {
-            background: #0f172a;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .candidate-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .candidate-name {
-            font-weight: bold;
-            font-size: 0.95rem;
-        }
-
-        .candidate-sub {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .progress-bar-bg {
-            height: 8px;
-            width: 100%;
-            background: var(--border);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            width: 0%;
-            background: var(--accent);
-            transition: width 0.3s ease;
-        }
-
-        button {
-            background-color: var(--accent);
-            color: #000;
-            font-weight: bold;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.85rem;
-        }
-
-        button:hover {
-            background-color: var(--accent-hover);
-        }
-
-        button.btn-danger {
-            background-color: var(--danger);
-            color: white;
-        }
-        button.btn-danger:hover { background-color: #dc2626; }
-
-        button.btn-warning {
-            background-color: var(--warning);
-            color: black;
-        }
-        button.btn-warning:hover { background-color: #d97706; }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-
-        .metric-box {
-            background: #0f172a;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .metric-val {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: var(--accent);
-        }
-
-        .metric-lbl {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .event-stream {
-            background: #050811;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            height: 220px;
-            overflow-y: auto;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 0.78rem;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .log-entry {
-            line-height: 1.4;
-            word-break: break-all;
-        }
-
-        .log-info { color: var(--text-main); }
-        .log-success { color: var(--success); }
-        .log-warn { color: var(--warning); }
-        .log-error { color: var(--danger); }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-    </style>
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>⚡ Enterprise Distributed Flash-Poll & Voting Engine</h1>
-        <div class="subtitle">Course Code: 26CMPE512 | Software System Design Lab Architecture Integrated</div>
-        <div class="pipeline-banner">
-            System Architecture Pipeline: Client UI ➔ Rate Limiter ➔ Simulated Redis ZSET (Port 6379) ➔ Simulated RabbitMQ (Port 5672) ➔ Persistence DB
-        </div>
-    </header>
-
-    <div class="grid">
-        <!-- Voter Portal -->
-        <div class="card">
-            <h2>🗳️ Voter Portal <span style="font-size: 0.75rem; color: var(--success);">(Active Poll: Campus Tech Leader 2026)</span></h2>
-            
-            <div class="candidate-card">
-                <div class="candidate-info">
-                    <div>
-                        <div class="candidate-name">Alex Morgan</div>
-                        <div class="candidate-sub">Microservices Architecture</div>
-                    </div>
-                    <button class="vote-btn" data-candidate="Alex Morgan">Vote Candidate</button>
-                </div>
-                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-Alex-Morgan"></div></div>
-            </div>
-
-            <div class="candidate-card">
-                <div class="candidate-info">
-                    <div>
-                        <div class="candidate-name">Sophia Chen</div>
-                        <div class="candidate-sub">Distributed Databases</div>
-                    </div>
-                    <button class="vote-btn" data-candidate="Sophia Chen">Vote Candidate</button>
-                </div>
-                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-Sophia-Chen"></div></div>
-            </div>
-
-            <div class="candidate-card">
-                <div class="candidate-info">
-                    <div>
-                        <div class="candidate-name">Marcus Vance</div>
-                        <div class="candidate-sub">Cloud Native Systems</div>
-                    </div>
-                    <button class="vote-btn" data-candidate="Marcus Vance">Vote Candidate</button>
-                </div>
-                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-Marcus-Vance"></div></div>
-            </div>
-        </div>
-
-        <!-- Testing & Diagnostics -->
-        <div class="card">
-            <h2>🛡️ Anti-Fraud & Concurrency Testing Suite</h2>
-            <div class="controls">
-                <button id="btn-bot-spike" class="btn-warning">🤖 Simulate Bot Traffic Spike</button>
-                <button id="btn-redlock" class="btn-warning">🔒 Trigger Distributed Lock</button>
-            </div>
-
-            <div class="metrics-grid">
-                <div class="metric-box">
-                    <div class="metric-val" id="metric-processed">0</div>
-                    <div class="metric-lbl">Processed Votes</div>
-                </div>
-                <div class="metric-box">
-                    <div class="metric-val" id="metric-blocked" style="color: var(--danger);">0</div>
-                    <div class="metric-lbl">Spam Requests Blocked</div>
-                </div>
-                <div class="metric-box">
-                    <div class="metric-val" style="font-size: 0.9rem; margin-top: 5px;">6379 / 5672</div>
-                    <div class="metric-lbl">Simulated Redis / MQ Port</div>
-                </div>
-            </div>
-
-            <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <span style="font-size: 0.85rem; font-weight: bold;">📡 Realtime System Event Stream</span>
-                    <button id="btn-reset" class="btn-danger" style="padding: 4px 8px; font-size: 0.75rem;">Reset Redis Cache</button>
-                </div>
-                <div class="event-stream" id="event-log"></div>
-            </div>
-        </div>
+  <div class="sidebar">
+    <div class="brand">?? VOTONIC</div>
+    <div class="nav-group">
+      <div id="nav-home" class="nav-item active" onclick="navTo('home')">?? Main Portals</div>
+      <div id="nav-previous-winners" class="nav-item" onclick="navTo('previous-winners')">?? Previous Winners</div>
     </div>
-</div>
+  </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const redisZSet = { 'Alex Morgan': 0, 'Sophia Chen': 0, 'Marcus Vance': 0 };
-    const rabbitMQQueue = [];
-    const databaseDB = [];
-    const metrics = { processed: 0, blocked: 0 };
+  <div class="main-wrapper">
+    <div class="container">
 
-    const rateLimiterMemory = {}; 
-    const RATE_LIMIT_COUNT = 3;
-    const RATE_LIMIT_WINDOW_MS = 1000;
+      <!-- HOME -->
+      <div id="section-home" class="view-section active">
+        <h1 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;">Campus Elections &amp; Governance</h1>
+        <p style="color: var(--muted); font-size: 14px;">Select your portal to log in.</p>
 
-    let isRedlockAcquired = false;
-    let redlockTimer = null;
+        <div class="grid-3">
+          <div class="portal-card">
+            <div>
+              <div class="portal-title">?? 1. Student Portal</div>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login with Roll ID &amp; DOB to cast vote.</p>
+            </div>
+            <button type="button" class="btn" id="btn-to-student">Student Login</button>
+          </div>
 
-    const elProcessed = document.getElementById('metric-processed');
-    const elBlocked = document.getElementById('metric-blocked');
-    const elEventLog = document.getElementById('event-log');
-    const btnBotSpike = document.getElementById('btn-bot-spike');
-    const btnRedlock = document.getElementById('btn-redlock');
-    const btnReset = document.getElementById('btn-reset');
-    const voteButtons = document.querySelectorAll('.vote-btn');
+          <div class="portal-card">
+            <div>
+              <div class="portal-title">?? 2. Candidate Portal</div>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login to submit nomination &amp; manifesto.</p>
+            </div>
+            <button type="button" class="btn" id="btn-to-candidate">Candidate Login</button>
+          </div>
 
-    function logEvent(message, type = 'info') {
-        const timeStr = new Date().toLocaleTimeString().toLowerCase();
-        const entry = document.createElement('div');
-        entry.className = `log-entry log-${type}`;
-        entry.textContent = `[${timeStr}] ${message}`;
-        elEventLog.appendChild(entry);
-        elEventLog.scrollTop = elEventLog.scrollHeight;
+          <div class="portal-card">
+            <div>
+              <div class="portal-title">? 3. Administrative Portal</div>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Approve nominations &amp; close elections.</p>
+            </div>
+            <button type="button" class="btn" id="btn-to-admin">Administrative Login</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIOUS WINNERS -->
+      <div id="section-previous-winners" class="view-section">
+        <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">?? Certified Election Winners</h1>
+        <div class="card">
+          <div id="previous-winners-container">Loading winners...</div>
+        </div>
+      </div>
+
+      <!-- STUDENT AUTH -->
+      <div id="section-login-student" class="view-section">
+        <div class="card" style="max-width: 440px; margin: 40px auto;">
+          <div class="card-title">?? Student Authentication</div>
+          <div class="form-group">
+            <label>Student Roll ID</label>
+            <input type="text" id="stu-id" class="form-control" value="STU101">
+          </div>
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" id="stu-dob" class="form-control" value="2003-05-14">
+          </div>
+          <button type="button" class="btn" id="btn-login-student">Login to Vote</button>
+          <div id="stu-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
+        </div>
+      </div>
+
+      <!-- STUDENT DASHBOARD -->
+      <div id="section-dashboard-student" class="view-section">
+        <h2 style="margin-bottom: 20px;">Student Voting Dashboard</h2>
+        <div class="card">
+          <div class="card-title">?? Cast Official Ballot</div>
+          <div class="form-group">
+            <label>Active Election</label>
+            <select id="vote-election-id" class="form-control"></select>
+          </div>
+          <div class="form-group">
+            <label>Approved Candidate</label>
+            <select id="vote-candidate-id" class="form-control"></select>
+          </div>
+          <button type="button" class="btn" id="btn-cast-vote">Submit Ballot</button>
+          <div id="vote-response" style="margin-top: 15px; font-size: 13px;"></div>
+        </div>
+      </div>
+
+      <!-- CANDIDATE AUTH -->
+      <div id="section-login-candidate" class="view-section">
+        <div class="card" style="max-width: 440px; margin: 40px auto;">
+          <div class="card-title">?? Candidate Authentication</div>
+          <div class="form-group">
+            <label>Candidate ID</label>
+            <input type="text" id="cand-user-id" class="form-control" value="STU102">
+          </div>
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" id="cand-dob" class="form-control" value="2004-08-22">
+          </div>
+          <button type="button" class="btn" id="btn-login-candidate">Login Candidate Portal</button>
+          <div id="cand-login-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
+        </div>
+      </div>
+
+      <!-- CANDIDATE DASHBOARD -->
+      <div id="section-dashboard-candidate" class="view-section">
+        <h2 style="margin-bottom: 20px;">Candidate Nomination Portal</h2>
+        <div class="card">
+          <div class="card-title">?? Submit Nomination Request</div>
+          <div class="form-group">
+            <label>Target Election</label>
+            <select id="cand-election-id" class="form-control"></select>
+          </div>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="cand-name" class="form-control" value="Priya Patel">
+          </div>
+          <div class="form-group">
+            <label>Manifesto</label>
+            <textarea id="cand-manifesto" class="form-control" rows="3">Enhance campus wifi coverage and extend library hours during exams.</textarea>
+          </div>
+          <button type="button" class="btn" id="btn-submit-nomination">Submit Request</button>
+          <div id="cand-response" style="margin-top: 15px; font-size: 13px;"></div>
+        </div>
+      </div>
+
+      <!-- ADMIN AUTH -->
+      <div id="section-login-admin" class="view-section">
+        <div class="card" style="max-width: 440px; margin: 40px auto;">
+          <div class="card-title">?? Administrative Authentication</div>
+          <div class="form-group">
+            <label>Administrator ID</label>
+            <input type="text" id="admin-user-id" class="form-control" value="ADMIN01">
+          </div>
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" id="admin-dob" class="form-control" value="1985-01-01">
+          </div>
+          <button type="button" class="btn" id="btn-login-admin">Login Administrator Portal</button>
+          <div id="admin-login-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
+        </div>
+      </div>
+
+      <!-- ADMIN DASHBOARD -->
+      <div id="section-dashboard-admin" class="view-section">
+        <h2 style="margin-bottom: 20px;">Governance Control Center</h2>
+        <div class="card">
+          <div class="card-title">?? Candidate Nomination Requests</div>
+          <table id="admin-pending-table">
+            <thead>
+              <tr><th>Candidate</th><th>Election ID</th><th>Manifesto</th><th>Actions</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-title">?? Manage Elections</div>
+          <table id="admin-elections-table">
+            <thead>
+              <tr><th>Election Title</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    console.log("VOTONIC Script Mounted Successfully");
+
+    function navTo(targetId) {
+      console.log("Navigating to:", targetId);
+      const views = document.querySelectorAll('.view-section');
+      views.forEach(v => v.classList.remove('active'));
+      
+      const navs = document.querySelectorAll('.nav-item');
+      navs.forEach(n => n.classList.remove('active'));
+
+      const sec = document.getElementById('section-' + targetId);
+      if (sec) sec.classList.add('active');
+
+      const nav = document.getElementById('nav-' + targetId);
+      if (nav) nav.classList.add('active');
     }
 
-    function checkRateLimit(clientIp) {
-        const now = Date.now();
-        if (!rateLimiterMemory[clientIp]) {
-            rateLimiterMemory[clientIp] = [];
-        }
-        
-        rateLimiterMemory[clientIp] = rateLimiterMemory[clientIp].filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
-        
-        if (rateLimiterMemory[clientIp].length >= RATE_LIMIT_COUNT) {
-            return false;
-        }
-        
-        rateLimiterMemory[clientIp].push(now);
-        return true;
-    }
+    // Bind event listeners via JS directly (prevents inline execution bugs)
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('btn-to-student').addEventListener('click', () => navTo('login-student'));
+      document.getElementById('btn-to-candidate').addEventListener('click', () => navTo('login-candidate'));
+      document.getElementById('btn-to-admin').addEventListener('click', () => navTo('login-admin'));
 
-    async function processVote(candidateId, clientIp = '127.0.0.1') {
-        const startTime = performance.now();
-        try {
-            if (isRedlockAcquired) {
-                metrics.blocked++;
-                elBlocked.textContent = metrics.blocked;
-                logEvent(`🔒 [423 LOCKED] Poll is locked during Mutex maintenance! Request rejected.`, 'error');
-                return false;
-            }
+      document.getElementById('btn-login-student').addEventListener('click', () => login('STUDENT'));
+      document.getElementById('btn-login-candidate').addEventListener('click', () => login('CANDIDATE'));
+      document.getElementById('btn-login-admin').addEventListener('click', () => login('ADMIN'));
 
-            if (!checkRateLimit(clientIp)) {
-                metrics.blocked++;
-                elBlocked.textContent = metrics.blocked;
-                logEvent(`⛔ [429 RATE LIMITED] IP ${clientIp} exceeded rate limit! Blocked.`, 'error');
-                return false;
-            }
-
-            redisZSet[candidateId] = (redisZSet[candidateId] || 0) + 1;
-            const votePayload = {
-                voteId: 'vote_' + Math.random().toString(36).substr(2, 9),
-                candidateId,
-                clientIp,
-                timestamp: new Date().toISOString()
-            };
-
-            rabbitMQQueue.push(votePayload);
-
-            await new Promise(resolve => setTimeout(resolve, 50));
-            const item = rabbitMQQueue.shift();
-            databaseDB.push(item);
-
-            metrics.processed++;
-            elProcessed.textContent = metrics.processed;
-            updateLeaderboardUI();
-
-            const latency = (performance.now() - startTime).toFixed(2);
-            logEvent(`✅ [VOTE_PERSISTED] Candidate: "${candidateId}" | ID: ${votePayload.voteId} | Latency: ${latency}ms`, 'success');
-            return true;
-        } catch (err) {
-            logEvent(`💥 [SYSTEM ERROR] ${err.message}`, 'error');
-            return false;
-        }
-    }
-
-    function updateLeaderboardUI() {
-        let totalVotes = 0;
-        Object.values(redisZSet).forEach(count => totalVotes += count);
-
-        Object.keys(redisZSet).forEach(candidate => {
-            const count = redisZSet[candidate];
-            const pct = totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(1) : 0;
-            const barId = 'bar-' + candidate.replace(/\s+/g, '-');
-            const elBar = document.getElementById(barId);
-            if (elBar) {
-                elBar.style.width = `${pct}%`;
-            }
-        });
-    }
-
-    async function simulateBotSpike() {
-        logEvent('🚀 Simulating 10 Rapid Automated Bot Votes from IP: 192.168.1.50...', 'warn');
-        const botIp = '192.168.1.50';
-        const candidates = ['Alex Morgan', 'Sophia Chen', 'Marcus Vance'];
-
-        for (let i = 0; i < 10; i++) {
-            const chosen = candidates[i % candidates.length];
-            await processVote(chosen, botIp);
-        }
-    }
-
-    function triggerRedlock() {
-        logEvent('🔒 Requesting Distributed Redlock on Poll Closure key "lock:poll_close"...', 'info');
-        
-        if (isRedlockAcquired) {
-            logEvent('🔒 [409 LOCK DENIED] Node 2 attempt rejected. Lock held by Node 1!', 'error');
-            return;
-        }
-
-        isRedlockAcquired = true;
-        logEvent('🔒 [LOCK GRANTED] Node 1 acquired Redlock (TTL: 3000ms). Executing critical section...', 'warn');
-
-        if (redlockTimer) clearTimeout(redlockTimer);
-        redlockTimer = setTimeout(() => {
-            isRedlockAcquired = false;
-            logEvent('🔓 [LOCK RELEASED] Redlock expired/released successfully.', 'info');
-        }, 3000);
-    }
-
-    function resetSystem() {
-        Object.keys(redisZSet).forEach(k => redisZSet[k] = 0);
-        rabbitMQQueue.length = 0;
-        databaseDB.length = 0;
-        metrics.processed = 0;
-        metrics.blocked = 0;
-        
-        Object.keys(rateLimiterMemory).forEach(k => delete rateLimiterMemory[k]);
-        
-        if (redlockTimer) clearTimeout(redlockTimer);
-        isRedlockAcquired = false;
-
-        elProcessed.textContent = '0';
-        elBlocked.textContent = '0';
-        elEventLog.innerHTML = '';
-        updateLeaderboardUI();
-
-        logEvent('System Initialized. Redis ZSET Cache & RabbitMQ Queue Ready.', 'info');
-    }
-
-    voteButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const candidate = e.target.getAttribute('data-candidate');
-            processVote(candidate, '127.0.0.1');
-        });
+      document.getElementById('btn-cast-vote').addEventListener('click', castVote);
+      document.getElementById('btn-submit-nomination').addEventListener('click', submitNomination);
     });
 
-    btnBotSpike.addEventListener('click', simulateBotSpike);
-    btnRedlock.addEventListener('click', triggerRedlock);
-    btnReset.addEventListener('click', resetSystem);
+    let currentUser = null;
 
-    logEvent('System Initialized. Redis ZSET Cache & RabbitMQ Queue Ready.', 'info');
-});
-</script>
+    async function login(role) {
+      let id, dob, errEl;
+      if (role === 'STUDENT') {
+        id = document.getElementById('stu-id').value;
+        dob = document.getElementById('stu-dob').value;
+        errEl = document.getElementById('stu-error');
+      } else if (role === 'CANDIDATE') {
+        id = document.getElementById('cand-user-id').value;
+        dob = document.getElementById('cand-dob').value;
+        errEl = document.getElementById('cand-login-error');
+      } else if (role === 'ADMIN') {
+        id = document.getElementById('admin-user-id').value;
+        dob = document.getElementById('admin-dob').value;
+        errEl = document.getElementById('admin-login-error');
+      }
+
+      errEl.innerText = "Authenticating...";
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: id, dob, role })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          errEl.innerText = "";
+          currentUser = data.user;
+          if (role === 'STUDENT') {
+            navTo('dashboard-student');
+            loadStudentDashboard();
+          } else if (role === 'CANDIDATE') {
+            navTo('dashboard-candidate');
+            loadCandidateDashboard();
+          } else if (role === 'ADMIN') {
+            navTo('dashboard-admin');
+            loadAdminDashboard();
+          }
+        } else {
+          errEl.innerText = data.error || "Authentication failed.";
+        }
+      } catch (e) {
+        errEl.innerText = "Server error. Try again.";
+      }
+    }
+
+    async function loadStudentDashboard() {
+      const res = await fetch('/api/elections');
+      const data = await res.json();
+      const select = document.getElementById('vote-election-id');
+      select.innerHTML = data.data.filter(e => e.status === 'ACTIVE').map(e => `<option value="${e.id}">${e.title}</option>`).join('');
+      loadCandidates();
+      select.onchange = loadCandidates;
+    }
+
+    async function loadCandidates() {
+      const elecId = document.getElementById('vote-election-id').value;
+      if (!elecId) return;
+      const res = await fetch(`/api/elections/${elecId}/candidates`);
+      const data = await res.json();
+      document.getElementById('vote-candidate-id').innerHTML = data.data.map(c => `<option value="${c.id}">${c.name} - "${c.manifesto}"</option>`).join('');
+    }
+
+    async function castVote() {
+      const election_id = document.getElementById('vote-election-id').value;
+      const candidate_id = document.getElementById('vote-candidate-id').value;
+      const respBox = document.getElementById('vote-response');
+
+      const res = await fetch('/api/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ election_id, voter_id: currentUser.id, candidate_id })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        respBox.innerHTML = `<span style="color:var(--success)">Ballot Cast! Confirmation: ${data.correlation_id}</span>`;
+      } else {
+        respBox.innerHTML = `<span style="color:var(--danger)">${data.error}</span>`;
+      }
+    }
+
+    async function loadCandidateDashboard() {
+      const res = await fetch('/api/elections');
+      const data = await res.json();
+      document.getElementById('cand-election-id').innerHTML = data.data.filter(e => e.status === 'ACTIVE').map(e => `<option value="${e.id}">${e.title}</option>`).join('');
+    }
+
+    async function submitNomination() {
+      const election_id = document.getElementById('cand-election-id').value;
+      const name = document.getElementById('cand-name').value;
+      const manifesto = document.getElementById('cand-manifesto').value;
+      const respBox = document.getElementById('cand-response');
+
+      const res = await fetch('/api/candidates/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ election_id, user_id: currentUser.id, name, manifesto })
+      });
+      if (res.ok) {
+        respBox.innerHTML = '<span style="color:var(--warning)">Nomination submitted for Admin approval.</span>';
+      }
+    }
+
+    async function loadAdminDashboard() {
+      const pRes = await fetch('/api/admin/candidates/pending');
+      const pData = await pRes.json();
+      const tbody = document.querySelector('#admin-pending-table tbody');
+      if (pData.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);">No pending requests.</td></tr>';
+      } else {
+        tbody.innerHTML = pData.data.map(c => `
+          <tr>
+            <td><strong>${c.name}</strong></td>
+            <td>${c.election_id}</td>
+            <td>${c.manifesto}</td>
+            <td>
+              <button class="btn btn-success" style="padding:4px 8px; width:auto;" onclick="moderate('${c.id}', 'APPROVED')">Approve</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      const eRes = await fetch('/api/elections');
+      const eData = await eRes.json();
+      document.querySelector('#admin-elections-table tbody').innerHTML = eData.data.map(e => `
+        <tr>
+          <td><strong>${e.title}</strong></td>
+          <td>${e.status}</td>
+          <td>${e.status === 'ACTIVE' ? `<button class="btn btn-danger" style="padding:4px 8px; width:auto;" onclick="closeElec('${e.id}')">Close</button>` : 'Closed'}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function moderate(candId, status) {
+      await fetch(`/api/admin/candidates/${candId}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      loadAdminDashboard();
+    }
+
+    async function closeElec(elecId) {
+      await fetch(`/api/admin/elections/${elecId}/close`, { method: 'POST' });
+      loadAdminDashboard();
+    }
+  </script>
 </body>
 </html>

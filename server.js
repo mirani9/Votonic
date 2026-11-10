@@ -84,7 +84,16 @@ if (userCount === 0) {
   insertCandidate.run('c2', 'elec_2026_cs', 'STU102', 'Priya Patel', 'Industry Internship Drives and Peer Tutoring', 'APPROVED');
 }
 
-const redis = new Redis({ host: process.env.REDIS_HOST || '127.0.0.1', port: 6379, maxRetriesPerRequest: null });
+const redis = new Redis({
+  host: process.env.REDIS_HOST || '127.0.0.1',
+  port: process.env.REDIS_PORT || 6379,
+  maxRetriesPerRequest: 1,
+  enableOfflineQueue: false,
+  retryStrategy: () => null
+});
+redis.on('error', (err) => {
+  // Silent fallback to SQLite when Redis is unavailable
+});
 
 let channel = null;
 const QUEUE_NAME = 'votes_queue';

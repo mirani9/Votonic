@@ -66,17 +66,6 @@ if (db.prepare('SELECT count(*) as count FROM elections').get().count === 0) {
   );
 }
 
-if (db.prepare('SELECT count(*) as count FROM candidates').get().count === 0) {
-  db.prepare('INSERT INTO candidates (id, election_id, user_id, name, manifesto, status) VALUES (?, ?, ?, ?, ?, ?)').run(
-    'CAND_01',
-    'ELEC2026_01',
-    'STU102',
-    'Priya Patel',
-    'Enhance campus wifi coverage and extend library hours during exams.',
-    'APPROVED'
-  );
-}
-
 app.post('/api/auth/login', (req, res) => {
   const { user_id, dob, role } = req.body;
   if (!user_id || !dob || !role) {
@@ -128,6 +117,38 @@ app.post('/api/candidates/apply', (req, res) => {
     res.json({ success: true, message: 'Nomination request submitted.' });
   } catch (err) {
     res.status(500).json({ error: 'Nomination submission failed.' });
+  }
+});
+
+app.post('/api/admin/users/create', (req, res) => {
+  const { id, name, dob, role } = req.body;
+  if (!id || !name || !dob || !role) {
+    return res.status(400).json({ error: 'ID, Name, DOB, and Role are required.' });
+  }
+  try {
+    const cleanId = String(id).trim().toUpperCase();
+    const cleanRole = String(role).trim().toLowerCase();
+    db.prepare('INSERT INTO users (id, name, dob, role) VALUES (?, ?, ?, ?)').run(cleanId, name.trim(), dob.trim(), cleanRole);
+    res.json({ success: true, message: 'User account created: ' + cleanId });
+  } catch (err) {
+    if (err.message.includes('UNIQUE constraint failed')) {
+      return res.status(400).json({ error: 'User ID already exists.' });
+    }
+    res.status(500).json({ error: 'Failed to create user.' });
+  }
+});
+
+app.post('/api/admin/elections/create', (req, res) => {
+  const { title, description } = req.body;
+  if (!title) {
+    return res.status(400).json({ error: 'Election title is required.' });
+  }
+  const electionId = 'ELEC_' + Date.now();
+  try {
+    db.prepare("INSERT INTO elections (id, title, description, status) VALUES (?, ?, ?, 'ACTIVE')").run(electionId, title, description || ('Election for ' + title));
+    res.json({ success: true, message: 'Election post launched successfully!', electionId });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to launch election post.' });
   }
 });
 

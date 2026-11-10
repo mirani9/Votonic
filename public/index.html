@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VOTONIC | Campus Elections Platform</title>
+  <title>VOTONIC | Campus Governance Platform</title>
   <style>
     :root {
       --bg: #0b0f19;
@@ -21,17 +21,15 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     body { background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
 
-    /* Sidebar Navigation */
     .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 25px 20px; display: flex; flex-direction: column; gap: 25px; }
     .brand { font-size: 22px; font-weight: 800; color: var(--primary); letter-spacing: 0.5px; }
     .nav-group { display: flex; flex-direction: column; gap: 10px; }
     .nav-item {
-      display: flex; align-items: center; gap: 10px; padding: 12px 14px; color: var(--muted);
+      display: flex; align-items: center; padding: 12px 14px; color: var(--muted);
       border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
     }
     .nav-item:hover, .nav-item.active { background: var(--card-bg); color: var(--text); border-left: 3px solid var(--primary); }
 
-    /* Main Container */
     .main-wrapper { flex: 1; padding: 40px; overflow-y: auto; }
     .container { max-width: 1000px; margin: 0 auto; }
     
@@ -67,24 +65,23 @@
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="brand">?? VOTONIC</div>
+    <div class="brand">VOTONIC</div>
     <div class="nav-group">
-      <div class="nav-item active" onclick="showSection('home')">??? Main Portals</div>
-      <div class="nav-item" onclick="showSection('previous-winners')">?? Previous Winners</div>
+      <div class="nav-item active" onclick="showSection('home')">Main Portals</div>
+      <div class="nav-item" onclick="showSection('previous-winners')">Previous Winners</div>
     </div>
   </div>
 
-  <!-- Main Content Area -->
+  <!-- Main Workspace -->
   <div class="main-wrapper">
     <div class="container">
 
-      <!-- 1. MAIN LANDING PAGE (3 PORTALS ONLY) -->
+      <!-- 1. MAIN LANDING PAGE (3 CLEAN PORTALS) -->
       <div id="section-home" class="view-section active">
         <h1 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;">Campus Elections & Governance</h1>
-        <p style="color: var(--muted); font-size: 14px;">Select your respective portal below to log in.</p>
+        <p style="color: var(--muted); font-size: 14px;">Select your portal below to log in.</p>
 
         <div class="grid-3">
-          <!-- Student Portal Option -->
           <div class="portal-card">
             <div>
               <div class="portal-title">1. Student Portal</div>
@@ -93,7 +90,6 @@
             <button class="btn" onclick="showSection('login-student')">Student Login</button>
           </div>
 
-          <!-- Candidate Portal Option -->
           <div class="portal-card">
             <div>
               <div class="portal-title">2. Candidate Portal</div>
@@ -102,7 +98,6 @@
             <button class="btn" onclick="showSection('login-candidate')">Candidate Login</button>
           </div>
 
-          <!-- Administrative Portal Option -->
           <div class="portal-card">
             <div>
               <div class="portal-title">3. Administrative Portal</div>
@@ -113,11 +108,11 @@
         </div>
       </div>
 
-      <!-- 2. PUBLIC PREVIOUS WINNERS (NO LOGIN REQUIRED) -->
+      <!-- 2. PREVIOUS WINNERS SECTION -->
       <div id="section-previous-winners" class="view-section">
-        <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">?? Certified Previous Election Winners</h1>
+        <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">Certified Previous Election Winners</h1>
         <div class="card">
-          <div id="previous-winners-container">Loading certified election winners...</div>
+          <div id="previous-winners-container">Loading election history...</div>
         </div>
       </div>
 
@@ -139,7 +134,7 @@
       </div>
 
       <div id="section-dashboard-student" class="view-section">
-        <h2 style="margin-bottom: 20px;">??? Official Student Voting Portal</h2>
+        <h2 style="margin-bottom: 20px;">Official Student Voting Portal</h2>
         <div class="card">
           <div class="card-title">Cast Official Ballot</div>
           <div class="form-group">
@@ -173,7 +168,7 @@
       </div>
 
       <div id="section-dashboard-candidate" class="view-section">
-        <h2 style="margin-bottom: 20px;">?? Candidate Nomination Request Portal</h2>
+        <h2 style="margin-bottom: 20px;">Candidate Nomination Request Portal</h2>
         <div class="card">
           <div class="card-title">Submit Nomination Request</div>
           <div class="form-group">
@@ -211,11 +206,10 @@
       </div>
 
       <div id="section-dashboard-admin" class="view-section">
-        <h2 style="margin-bottom: 20px;">?? Administrator Governance Control Center</h2>
+        <h2 style="margin-bottom: 20px;">Administrator Governance Control Center</h2>
         
-        <!-- Candidate Request Moderation -->
         <div class="card">
-          <div class="card-title">?? Candidate Nomination Requests (Approve / Reject)</div>
+          <div class="card-title">Candidate Nomination Requests (Approve / Reject)</div>
           <table id="admin-pending-table">
             <thead>
               <tr><th>Candidate Name</th><th>Election ID</th><th>Manifesto Summary</th><th>Actions</th></tr>
@@ -224,9 +218,8 @@
           </table>
         </div>
 
-        <!-- Targeted Election Turnoff Controls -->
         <div class="card">
-          <div class="card-title">?? Manage & Close Specific Elections</div>
+          <div class="card-title">Manage & Close Specific Elections</div>
           <table id="admin-elections-table">
             <thead>
               <tr><th>Election Title</th><th>Status</th><th>Targeted Action</th></tr>
@@ -301,25 +294,27 @@
     }
 
     async function loadPreviousWinners() {
+      const container = document.getElementById('previous-winners-container');
       try {
         const res = await fetch(`${API_BASE}/api/elections/previous-winners`);
         const json = await res.json();
         const winners = json.data || [];
-        const container = document.getElementById('previous-winners-container');
 
         if (winners.length === 0) {
-          container.innerHTML = '<p style="color:var(--muted); font-size:13px;">No elections have concluded yet.</p>';
+          container.innerHTML = '<div style="padding:16px; background:#0b0f19; border-radius:8px; border:1px solid var(--border); color:var(--muted); font-size:14px;">No elections have been completed yet. Previous election winners will automatically appear here once an administrator closes an active election.</div>';
         } else {
           container.innerHTML = winners.map(w => `
             <div style="padding:16px; background:#0b0f19; border-radius:8px; border:1px solid var(--border); margin-bottom:12px;">
               <div style="font-size:12px; color:var(--primary); font-weight:700;">${w.election_title}</div>
-              <p style="font-size:12px; color:var(--muted); margin:4px 0 10px 0;">${w.election_description}</p>
-              <div style="font-size:16px; font-weight:800; color:var(--success);">?? Winner: ${w.winner_name}</div>
-              <div style="font-size:13px; color:var(--text); margin-top:4px;">Won by <strong>${w.winning_percentage}%</strong> of total votes cast (${w.total_votes_cast} votes).</div>
+              <p style="font-size:12px; color:var(--muted); margin:4px 0 10px 0;">${w.election_description || 'Campus Election'}</p>
+              <div style="font-size:16px; font-weight:800; color:var(--success);">Elected Winner: ${w.winner_name}</div>
+              <div style="font-size:13px; color:var(--text); margin-top:4px;">Won with <strong>${w.winning_percentage}%</strong> of certified votes (${w.total_votes_cast} votes cast).</div>
             </div>
           `).join('');
         }
-      } catch (err) {}
+      } catch (err) {
+        container.innerHTML = '<div style="color:var(--muted); font-size:14px;">No completed elections available at this time.</div>';
+      }
     }
 
     async function loadElectionsForStudent() {
@@ -337,7 +332,7 @@
       const res = await fetch(`${API_BASE}/api/elections/${elecId}/candidates`);
       const json = await res.json();
       document.getElementById('vote-candidate-id').innerHTML = json.data.map(c => `
-        <option value="${c.id}">${c.name} � "${c.manifesto}"</option>
+        <option value="${c.id}">${c.name} — "${c.manifesto}"</option>
       `).join('');
     }
 
@@ -353,9 +348,9 @@
       });
       const data = await res.json();
       if (res.ok) {
-        box.innerHTML = `<span style="color:var(--success)">? Ballot Cast Successfully! Confirmation ID: ${data.correlation_id}</span>`;
+        box.innerHTML = `<span style="color:var(--success)">Ballot Cast Successfully! Confirmation ID: ${data.correlation_id}</span>`;
       } else {
-        box.innerHTML = `<span style="color:var(--danger)">?? ${data.error}</span>`;
+        box.innerHTML = `<span style="color:var(--danger)">${data.error}</span>`;
       }
     }
 
@@ -379,12 +374,11 @@
       });
       const data = await res.json();
       if (res.ok) {
-        box.innerHTML = `<span style="color:var(--warning)">? Nomination request submitted! Awaiting Administrator approval.</span>`;
+        box.innerHTML = `<span style="color:var(--warning)">Nomination request submitted! Awaiting Administrator approval.</span>`;
       }
     }
 
     async function loadAdminDashboard() {
-      // Pending Nominations Queue
       const pendingRes = await fetch(`${API_BASE}/api/admin/candidates/pending`);
       const pendingJson = await pendingRes.json();
       const pTbody = document.querySelector('#admin-pending-table tbody');
@@ -404,7 +398,6 @@
         `).join('');
       }
 
-      // Specific Election Turnoff Table
       const elecRes = await fetch(`${API_BASE}/api/elections`);
       const elecJson = await elecRes.json();
       const eTbody = document.querySelector('#admin-elections-table tbody');

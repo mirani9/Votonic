@@ -72,14 +72,14 @@
     </div>
   </div>
 
-  <!-- Main Workspace -->
+  <!-- Main Content -->
   <div class="main-wrapper">
     <div class="container">
 
-      <!-- 1. MAIN LANDING PAGE (3 CLEAN PORTALS) -->
+      <!-- 1. MAIN LANDING PAGE (3 PORTALS ONLY) -->
       <div id="section-home" class="view-section active">
         <h1 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;">Campus Elections & Governance</h1>
-        <p style="color: var(--muted); font-size: 14px;">Select your portal below to log in.</p>
+        <p style="color: var(--muted); font-size: 14px;">Select your respective portal below to log in.</p>
 
         <div class="grid-3">
           <div class="portal-card">
@@ -108,11 +108,11 @@
         </div>
       </div>
 
-      <!-- 2. PREVIOUS WINNERS SECTION -->
+      <!-- 2. PUBLIC PREVIOUS WINNERS (NO LOGIN REQUIRED) -->
       <div id="section-previous-winners" class="view-section">
         <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">Certified Previous Election Winners</h1>
         <div class="card">
-          <div id="previous-winners-container">Loading election history...</div>
+          <div id="previous-winners-container">Loading election results...</div>
         </div>
       </div>
 
@@ -332,7 +332,7 @@
       const res = await fetch(`${API_BASE}/api/elections/${elecId}/candidates`);
       const json = await res.json();
       document.getElementById('vote-candidate-id').innerHTML = json.data.map(c => `
-        <option value="${c.id}">${c.name} — "${c.manifesto}"</option>
+        <option value="${c.id}">${c.name} - "${c.manifesto}"</option>
       `).join('');
     }
 

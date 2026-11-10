@@ -22,10 +22,10 @@
     body { background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
 
     .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 25px 20px; display: flex; flex-direction: column; gap: 25px; }
-    .brand { font-size: 22px; font-weight: 800; color: var(--primary); letter-spacing: 0.5px; }
+    .brand { font-size: 22px; font-weight: 800; color: var(--primary); letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
     .nav-group { display: flex; flex-direction: column; gap: 8px; }
     .nav-item {
-      display: flex; align-items: center; padding: 12px 14px; color: var(--muted);
+      display: flex; align-items: center; gap: 10px; padding: 12px 14px; color: var(--muted);
       border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
     }
     .nav-item:hover, .nav-item.active { background: var(--card-bg); color: var(--text); border-left: 3px solid var(--primary); }
@@ -39,10 +39,10 @@
       display: flex; flex-direction: column; justify-content: space-between; gap: 20px; transition: transform 0.2s;
     }
     .portal-card:hover { border-color: var(--primary); transform: translateY(-4px); }
-    .portal-title { font-size: 18px; font-weight: 700; color: var(--primary); }
+    .portal-title { font-size: 18px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
 
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 25px; }
-    .card-title { font-size: 16px; font-weight: 600; color: var(--primary); margin-bottom: 15px; }
+    .card-title { font-size: 16px; font-weight: 600; color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
 
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
@@ -63,12 +63,12 @@
 </head>
 <body>
 
-  <!-- Navigation Sidebar (No Emojis / No Broken Question Marks) -->
+  <!-- Navigation Sidebar with HTML-Encoded Emojis (No UTF-8 Corruption) -->
   <div class="sidebar">
-    <div class="brand">VOTONIC</div>
+    <div class="brand">&#127891; VOTONIC</div>
     <div class="nav-group">
-      <div id="nav-home" class="nav-item active" onclick="showSection('home')">Main Portals</div>
-      <div id="nav-previous-winners" class="nav-item" onclick="showSection('previous-winners')">Previous Winners</div>
+      <div id="nav-home" class="nav-item active" onclick="showSection('home')">&#127963; Main Portals</div>
+      <div id="nav-previous-winners" class="nav-item" onclick="showSection('previous-winners')">&#127942; Previous Winners</div>
     </div>
   </div>
 
@@ -83,7 +83,7 @@
         <div class="grid-3">
           <div class="portal-card">
             <div>
-              <div class="portal-title">1. Student Portal</div>
+              <div class="portal-title">&#127891; 1. Student Portal</div>
               <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login with Student Roll ID & DOB to cast your official vote in active elections.</p>
             </div>
             <button class="btn" onclick="showSection('login-student')">Student Login</button>
@@ -91,7 +91,7 @@
 
           <div class="portal-card">
             <div>
-              <div class="portal-title">2. Candidate Portal</div>
+              <div class="portal-title">&#128221; 2. Candidate Portal</div>
               <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login with Candidate ID & DOB to request election nomination & submit manifestos.</p>
             </div>
             <button class="btn" onclick="showSection('login-candidate')">Candidate Login</button>
@@ -99,7 +99,7 @@
 
           <div class="portal-card">
             <div>
-              <div class="portal-title">3. Administrative Portal</div>
+              <div class="portal-title">&#9881; 3. Administrative Portal</div>
               <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login as Election Administrator to approve nominations and close specific elections.</p>
             </div>
             <button class="btn" onclick="showSection('login-admin')">Administrative Login</button>
@@ -107,18 +107,18 @@
         </div>
       </div>
 
-      <!-- 2. PREVIOUS WINNERS -->
+      <!-- 2. PUBLIC PREVIOUS WINNERS -->
       <div id="section-previous-winners" class="view-section">
-        <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">Certified Previous Election Winners</h1>
+        <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">&#127942; Certified Previous Election Winners</h1>
         <div class="card">
-          <div id="previous-winners-container">Loading election history...</div>
+          <div id="previous-winners-container">Loading certified election winners...</div>
         </div>
       </div>
 
       <!-- 3. STUDENT PORTAL -->
       <div id="section-login-student" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
-          <div class="card-title">Student Portal Authentication</div>
+          <div class="card-title">&#128274; Student Portal Authentication</div>
           <div class="form-group">
             <label>Student Roll ID</label>
             <input type="text" id="stu-id" class="form-control" value="STU101">
@@ -135,7 +135,7 @@
       <div id="section-dashboard-student" class="view-section">
         <h2 style="margin-bottom: 20px;">Official Student Voting Portal</h2>
         <div class="card">
-          <div class="card-title">Cast Official Ballot</div>
+          <div class="card-title">&#128499; Cast Official Ballot</div>
           <div class="form-group">
             <label>Select Active Campus Election</label>
             <select id="vote-election-id" class="form-control" onchange="loadCandidatesForVote()"></select>
@@ -152,7 +152,7 @@
       <!-- 4. CANDIDATE PORTAL -->
       <div id="section-login-candidate" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
-          <div class="card-title">Candidate Portal Authentication</div>
+          <div class="card-title">&#128274; Candidate Portal Authentication</div>
           <div class="form-group">
             <label>Candidate ID</label>
             <input type="text" id="cand-user-id" class="form-control" value="STU102">
@@ -169,7 +169,7 @@
       <div id="section-dashboard-candidate" class="view-section">
         <h2 style="margin-bottom: 20px;">Candidate Nomination Request Portal</h2>
         <div class="card">
-          <div class="card-title">Submit Nomination Request</div>
+          <div class="card-title">&#128229; Submit Nomination Request</div>
           <div class="form-group">
             <label>Target Election</label>
             <select id="cand-election-id" class="form-control"></select>
@@ -190,7 +190,7 @@
       <!-- 5. ADMIN PORTAL -->
       <div id="section-login-admin" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
-          <div class="card-title">Administrative Portal Authentication</div>
+          <div class="card-title">&#128274; Administrative Portal Authentication</div>
           <div class="form-group">
             <label>Administrator ID</label>
             <input type="text" id="admin-user-id" class="form-control" value="ADMIN01">
@@ -208,7 +208,7 @@
         <h2 style="margin-bottom: 20px;">Administrator Governance Control Center</h2>
         
         <div class="card">
-          <div class="card-title">Candidate Nomination Requests (Approve / Reject)</div>
+          <div class="card-title">&#128202; Candidate Nomination Requests (Approve / Reject)</div>
           <table id="admin-pending-table">
             <thead>
               <tr><th>Candidate Name</th><th>Election ID</th><th>Manifesto Summary</th><th>Actions</th></tr>
@@ -218,7 +218,7 @@
         </div>
 
         <div class="card">
-          <div class="card-title">Manage & Close Specific Elections</div>
+          <div class="card-title">&#128274; Manage & Close Specific Elections</div>
           <table id="admin-elections-table">
             <thead>
               <tr><th>Election Title</th><th>Status</th><th>Targeted Action</th></tr>
@@ -310,7 +310,7 @@
             <div style="padding:16px; background:#0b0f19; border-radius:8px; border:1px solid var(--border); margin-bottom:12px;">
               <div style="font-size:12px; color:var(--primary); font-weight:700;">${w.election_title}</div>
               <p style="font-size:12px; color:var(--muted); margin:4px 0 10px 0;">${w.election_description || 'Campus Election'}</p>
-              <div style="font-size:16px; font-weight:800; color:var(--success);">Elected Winner: ${w.winner_name}</div>
+              <div style="font-size:16px; font-weight:800; color:var(--success);">&#129351; Elected Winner: ${w.winner_name}</div>
               <div style="font-size:13px; color:var(--text); margin-top:4px;">Won with <strong>${w.winning_percentage}%</strong> of certified votes (${w.total_votes_cast} votes cast).</div>
             </div>
           `).join('');

@@ -1,24 +1,75 @@
-import http from "k6/http";
-import { check, sleep } from "k6";
+﻿const http = require('http');
 
-export const options = {
-  stages: [
-    { duration: "5s", target: 50 },
-    { duration: "10s", target: 200 },
-    { duration: "5s", target: 0 },
-  ],
-};
+const TARGET_URL = 'http://localhost:3000/api/vote';
+const TOTAL_VOTES = 200;
+const CONCURRENCY = 10;
 
-export default function () {
-  const url = "http://localhost:3000/api/v1/poll/vote";
-  const payload = JSON.stringify({
-    candidateId: "Alex Morgan",
-    userId: "vu_" + Math.floor(Math.random() * 1000000),
+let sent = 0;
+let completed = 0;
+let start = Date.now();
+const latencies = [];
+
+function sendVote(voterId, candidateId) {
+  return new Promise((resolve) => {
+    const data = JSON.stringify({ voter_id: voterId, candidate_id: candidateId });
+    const reqStart = Date.now();
+
+    const req = http.request(TARGET_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data)
+      }
+    }, (res) => {
+      res.on('data', () => {});
+      res.on('end', () => {
+        latencies.push(Date.now() - reqStart);
+        completed++;
+        resolve();
+      });
+    });
+
+    req.on('error', () => {
+      completed++;
+      resolve();
+    });
+
+    req.write(data);
+    req.end();
   });
-  const params = { headers: { "Content-Type": "application.json" } };
-  const res = http.post(url, payload, params);
-  check(res, {
-    "status is 200 or 429": (r) => r.status === 200 || r.status === 429,
-  });
-  sleep(0.05);
 }
+
+async function run() {
+  console.log(`[Load Test] Dispatching ${TOTAL_VOTES} requests (Concurrency: ${CONCURRENCY})...`);
+  const candidates = ['c1', 'c2', 'c3'];
+
+  async function worker() {
+    while (sent < TOTAL_VOTES) {
+      const id = ++sent;
+      const voterId = `load_voter_${id}`;
+      const candidateId = candidates[id % 3];
+      await sendVote(voterId, candidateId);
+    }
+  }
+
+  const workers = [];
+  for (let i = 0; i < CONCURRENCY; i++) {
+    workers.push(worker());
+  }
+
+  await Promise.all(workers);
+  const totalTimeSec = (Date.now() - start) / 1000;
+  latencies.sort((a, b) => a - b);
+
+  const p50 = latencies[Math.floor(latencies.length * 0.50)];
+  const p95 = latencies[Math.floor(latencies.length * 0.95)];
+  const p99 = latencies[Math.floor(latencies.length * 0.99)];
+
+  console.log('\n==================================================');
+  console.log(`Completed ${completed} requests in ${totalTimeSec.toFixed(2)}s`);
+  console.log(`Throughput: ${(completed / totalTimeSec).toFixed(2)} req/sec`);
+  console.log(`Latency p50: ${p50}ms | p95: ${p95}ms | p99: ${p99}ms`);
+  console.log('==================================================\n');
+}
+
+run();

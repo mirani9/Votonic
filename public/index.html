@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOTONIC | Campus Elections Platform</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --sidebar-bg: #111827;
+      --card-bg: #1f2937;
+      --border: #374151;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+    /* Sidebar Navigation */
+    .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 25px 20px; display: flex; flex-direction: column; gap: 25px; }
+    .brand { font-size: 22px; font-weight: 800; color: var(--primary); letter-spacing: 0.5px; }
+    .nav-group { display: flex; flex-direction: column; gap: 10px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 12px 14px; color: var(--muted);
+      border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .nav-item:hover, .nav-item.active { background: var(--card-bg); color: var(--text); border-left: 3px solid var(--primary); }
+
+    /* Main Container */
+    .main-wrapper { flex: 1; padding: 40px; overflow-y: auto; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 30px; }
+    .portal-card {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 30px;
+      display: flex; flex-direction: column; justify-content: space-between; gap: 20px; transition: transform 0.2s;
+    }
+    .portal-card:hover { border-color: var(--primary); transform: translateY(-4px); }
+    .portal-title { font-size: 18px; font-weight: 700; color: var(--primary); }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 25px; }
+    .card-title { font-size: 16px; font-weight: 600; color: var(--primary); margin-bottom: 15px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .form-control { width: 100%; padding: 11px 14px; background: #0b0f19; border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; outline: none; }
+    
+    .btn { padding: 11px 20px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .btn:hover { background: var(--primary-hover); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+    th { color: var(--muted); background: #0b0f19; }
+
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="brand">?? VOTONIC</div>
+    <div class="nav-group">
+      <div class="nav-item active" onclick="showSection('home')">??? Main Portals</div>
+      <div class="nav-item" onclick="showSection('previous-winners')">?? Previous Winners</div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-wrapper">
+    <div class="container">
+
+      <!-- 1. MAIN LANDING PAGE (3 PORTALS ONLY) -->
+      <div id="section-home" class="view-section active">
+        <h1 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;">Campus Elections & Governance</h1>
+        <p style="color: var(--muted); font-size: 14px;">Select your respective portal below to log in.</p>
+
+        <div class="grid-3">
+          <!-- Student Portal Option -->
+          <div class="portal-card">
+            <div>
+              <div class="portal-title">1. Student Portal</div>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login with Student Roll ID & DOB to cast your official vote in active elections.</p>
+            </div>
+            <button class="btn" onclick="showSection('login-student')">Student Login</button>
+          </div>
+
+          <!-- Candidate Portal Option -->
+          <div class="portal-card">
+            <div>
+              <div class="portal-title">2. Candidate Portal</div>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login with Candidate ID & DOB to request election nomination & submit manifestos.</p>
+            </div>
+            <button class="btn" onclick="showSection('login-candidate')">Candidate Login</button>
+          </div>
+
+          <!-- Administrative Portal Option -->
+          <div class="portal-card">
+            <div>
+              <div class="portal-title">3. Administrative Portal</div>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login as Election Administrator to approve nominations and close specific elections.</p>
+            </div>
+            <button class="btn" onclick="showSection('login-admin')">Administrative Login</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. PUBLIC PREVIOUS WINNERS (NO LOGIN REQUIRED) -->
+      <div id="section-previous-winners" class="view-section">
+        <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">?? Certified Previous Election Winners</h1>
+        <div class="card">
+          <div id="previous-winners-container">Loading certified election winners...</div>
+        </div>
+      </div>
+
+      <!-- 3. STUDENT LOGIN & DASHBOARD -->
+      <div id="section-login-student" class="view-section">
+        <div class="card" style="max-width: 440px; margin: 40px auto;">
+          <div class="card-title">Student Portal Authentication</div>
+          <div class="form-group">
+            <label>Student Roll ID</label>
+            <input type="text" id="stu-id" class="form-control" value="STU101">
+          </div>
+          <div class="form-group">
+            <label>Date of Birth (DOB)</label>
+            <input type="date" id="stu-dob" class="form-control" value="2003-05-14">
+          </div>
+          <button class="btn" onclick="loginUser('STUDENT')">Login to Vote</button>
+          <div id="stu-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
+        </div>
+      </div>
+
+      <div id="section-dashboard-student" class="view-section">
+        <h2 style="margin-bottom: 20px;">??? Official Student Voting Portal</h2>
+        <div class="card">
+          <div class="card-title">Cast Official Ballot</div>
+          <div class="form-group">
+            <label>Select Active Campus Election</label>
+            <select id="vote-election-id" class="form-control" onchange="loadCandidatesForVote()"></select>
+          </div>
+          <div class="form-group">
+            <label>Select Approved Candidate</label>
+            <select id="vote-candidate-id" class="form-control"></select>
+          </div>
+          <button class="btn" onclick="castBallot()">Submit Secure Ballot</button>
+          <div id="vote-response" style="margin-top: 15px; font-size: 13px;"></div>
+        </div>
+      </div>
+
+      <!-- 4. CANDIDATE LOGIN & DASHBOARD -->
+      <div id="section-login-candidate" class="view-section">
+        <div class="card" style="max-width: 440px; margin: 40px auto;">
+          <div class="card-title">Candidate Portal Authentication</div>
+          <div class="form-group">
+            <label>Candidate ID</label>
+            <input type="text" id="cand-user-id" class="form-control" value="STU102">
+          </div>
+          <div class="form-group">
+            <label>Date of Birth (DOB)</label>
+            <input type="date" id="cand-dob" class="form-control" value="2004-08-22">
+          </div>
+          <button class="btn" onclick="loginUser('CANDIDATE')">Login Candidate Portal</button>
+          <div id="cand-login-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
+        </div>
+      </div>
+
+      <div id="section-dashboard-candidate" class="view-section">
+        <h2 style="margin-bottom: 20px;">?? Candidate Nomination Request Portal</h2>
+        <div class="card">
+          <div class="card-title">Submit Nomination Request</div>
+          <div class="form-group">
+            <label>Target Election</label>
+            <select id="cand-election-id" class="form-control"></select>
+          </div>
+          <div class="form-group">
+            <label>Candidate Full Name</label>
+            <input type="text" id="cand-name" class="form-control" placeholder="e.g. Priya Patel">
+          </div>
+          <div class="form-group">
+            <label>Campaign Manifesto & Key Goals</label>
+            <textarea id="cand-manifesto" class="form-control" rows="3" placeholder="Outline campaign initiatives..."></textarea>
+          </div>
+          <button class="btn" onclick="submitNominationRequest()">Submit Nomination Request</button>
+          <div id="cand-response" style="margin-top: 15px; font-size: 13px;"></div>
+        </div>
+      </div>
+
+      <!-- 5. ADMIN LOGIN & DASHBOARD -->
+      <div id="section-login-admin" class="view-section">
+        <div class="card" style="max-width: 440px; margin: 40px auto;">
+          <div class="card-title">Administrative Portal Authentication</div>
+          <div class="form-group">
+            <label>Administrator ID</label>
+            <input type="text" id="admin-user-id" class="form-control" value="ADMIN01">
+          </div>
+          <div class="form-group">
+            <label>Date of Birth (DOB)</label>
+            <input type="date" id="admin-dob" class="form-control" value="1985-01-01">
+          </div>
+          <button class="btn" onclick="loginUser('ADMIN')">Login Administrator Portal</button>
+          <div id="admin-login-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
+        </div>
+      </div>
+
+      <div id="section-dashboard-admin" class="view-section">
+        <h2 style="margin-bottom: 20px;">?? Administrator Governance Control Center</h2>
+        
+        <!-- Candidate Request Moderation -->
+        <div class="card">
+          <div class="card-title">?? Candidate Nomination Requests (Approve / Reject)</div>
+          <table id="admin-pending-table">
+            <thead>
+              <tr><th>Candidate Name</th><th>Election ID</th><th>Manifesto Summary</th><th>Actions</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Targeted Election Turnoff Controls -->
+        <div class="card">
+          <div class="card-title">?? Manage & Close Specific Elections</div>
+          <table id="admin-elections-table">
+            <thead>
+              <tr><th>Election Title</th><th>Status</th><th>Targeted Action</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000';
+    let currentUser = null;
+
+    function showSection(sectionId) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+      document.getElementById(`section-${sectionId}`).classList.add('active');
+
+      if (sectionId === 'previous-winners') {
+        loadPreviousWinners();
+      }
+      if (sectionId === 'home') {
+        document.querySelector('.nav-item:first-child').classList.add('active');
+      }
+    }
+
+    async function loginUser(role) {
+      let user_id, dob, errEl;
+      if (role === 'STUDENT') {
+        user_id = document.getElementById('stu-id').value;
+        dob = document.getElementById('stu-dob').value;
+        errEl = document.getElementById('stu-error');
+      } else if (role === 'CANDIDATE') {
+        user_id = document.getElementById('cand-user-id').value;
+        dob = document.getElementById('cand-dob').value;
+        errEl = document.getElementById('cand-login-error');
+      } else if (role === 'ADMIN') {
+        user_id = document.getElementById('admin-user-id').value;
+        dob = document.getElementById('admin-dob').value;
+        errEl = document.getElementById('admin-login-error');
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id, dob, role })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          currentUser = data.user;
+          if (role === 'STUDENT') {
+            showSection('dashboard-student');
+            loadElectionsForStudent();
+          } else if (role === 'CANDIDATE') {
+            showSection('dashboard-candidate');
+            loadElectionsForCandidate();
+          } else if (role === 'ADMIN') {
+            showSection('dashboard-admin');
+            loadAdminDashboard();
+          }
+        } else {
+          errEl.innerText = data.error;
+        }
+      } catch (err) {
+        errEl.innerText = 'Login error.';
+      }
+    }
+
+    async function loadPreviousWinners() {
+      try {
+        const res = await fetch(`${API_BASE}/api/elections/previous-winners`);
+        const json = await res.json();
+        const winners = json.data || [];
+        const container = document.getElementById('previous-winners-container');
+
+        if (winners.length === 0) {
+          container.innerHTML = '<p style="color:var(--muted); font-size:13px;">No elections have concluded yet.</p>';
+        } else {
+          container.innerHTML = winners.map(w => `
+            <div style="padding:16px; background:#0b0f19; border-radius:8px; border:1px solid var(--border); margin-bottom:12px;">
+              <div style="font-size:12px; color:var(--primary); font-weight:700;">${w.election_title}</div>
+              <p style="font-size:12px; color:var(--muted); margin:4px 0 10px 0;">${w.election_description}</p>
+              <div style="font-size:16px; font-weight:800; color:var(--success);">?? Winner: ${w.winner_name}</div>
+              <div style="font-size:13px; color:var(--text); margin-top:4px;">Won by <strong>${w.winning_percentage}%</strong> of total votes cast (${w.total_votes_cast} votes).</div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {}
+    }
+
+    async function loadElectionsForStudent() {
+      const res = await fetch(`${API_BASE}/api/elections`);
+      const json = await res.json();
+      const activeElections = json.data.filter(e => e.status === 'ACTIVE');
+      const selectEl = document.getElementById('vote-election-id');
+      selectEl.innerHTML = activeElections.map(e => `<option value="${e.id}">${e.title}</option>`).join('');
+      loadCandidatesForVote();
+    }
+
+    async function loadCandidatesForVote() {
+      const elecId = document.getElementById('vote-election-id').value;
+      if (!elecId) return;
+      const res = await fetch(`${API_BASE}/api/elections/${elecId}/candidates`);
+      const json = await res.json();
+      document.getElementById('vote-candidate-id').innerHTML = json.data.map(c => `
+        <option value="${c.id}">${c.name} — "${c.manifesto}"</option>
+      `).join('');
+    }
+
+    async function castBallot() {
+      const election_id = document.getElementById('vote-election-id').value;
+      const candidate_id = document.getElementById('vote-candidate-id').value;
+      const box = document.getElementById('vote-response');
+
+      const res = await fetch(`${API_BASE}/api/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ election_id, voter_id: currentUser.id, candidate_id })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        box.innerHTML = `<span style="color:var(--success)">? Ballot Cast Successfully! Confirmation ID: ${data.correlation_id}</span>`;
+      } else {
+        box.innerHTML = `<span style="color:var(--danger)">?? ${data.error}</span>`;
+      }
+    }
+
+    async function loadElectionsForCandidate() {
+      const res = await fetch(`${API_BASE}/api/elections`);
+      const json = await res.json();
+      const selectEl = document.getElementById('cand-election-id');
+      selectEl.innerHTML = json.data.filter(e => e.status === 'ACTIVE').map(e => `<option value="${e.id}">${e.title}</option>`).join('');
+    }
+
+    async function submitNominationRequest() {
+      const election_id = document.getElementById('cand-election-id').value;
+      const name = document.getElementById('cand-name').value;
+      const manifesto = document.getElementById('cand-manifesto').value;
+      const box = document.getElementById('cand-response');
+
+      const res = await fetch(`${API_BASE}/api/candidates/apply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ election_id, user_id: currentUser.id, name, manifesto })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        box.innerHTML = `<span style="color:var(--warning)">? Nomination request submitted! Awaiting Administrator approval.</span>`;
+      }
+    }
+
+    async function loadAdminDashboard() {
+      // Pending Nominations Queue
+      const pendingRes = await fetch(`${API_BASE}/api/admin/candidates/pending`);
+      const pendingJson = await pendingRes.json();
+      const pTbody = document.querySelector('#admin-pending-table tbody');
+      if (pendingJson.data.length === 0) {
+        pTbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);">No pending candidate requests.</td></tr>';
+      } else {
+        pTbody.innerHTML = pendingJson.data.map(c => `
+          <tr>
+            <td><strong>${c.name}</strong></td>
+            <td>${c.election_id}</td>
+            <td>${c.manifesto}</td>
+            <td>
+              <button class="btn btn-success" style="padding:5px 10px; font-size:12px;" onclick="moderateCandidate('${c.id}', 'APPROVED')">Approve</button>
+              <button class="btn btn-danger" style="padding:5px 10px; font-size:12px;" onclick="moderateCandidate('${c.id}', 'REJECTED')">Reject</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Specific Election Turnoff Table
+      const elecRes = await fetch(`${API_BASE}/api/elections`);
+      const elecJson = await elecRes.json();
+      const eTbody = document.querySelector('#admin-elections-table tbody');
+      eTbody.innerHTML = elecJson.data.map(e => `
+        <tr>
+          <td><strong>${e.title}</strong></td>
+          <td><span style="color:${e.status === 'ACTIVE' ? 'var(--success)' : 'var(--danger)'}">${e.status}</span></td>
+          <td>
+            ${e.status === 'ACTIVE' 
+              ? `<button class="btn btn-danger" style="padding:6px 12px; font-size:12px;" onclick="closeSpecificElection('${e.id}')">Close This Election</button>`
+              : '<span style="color:var(--muted); font-size:12px;">Closed</span>'
+            }
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function moderateCandidate(candId, status) {
+      await fetch(`${API_BASE}/api/admin/candidates/${candId}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      loadAdminDashboard();
+    }
+
+    async function closeSpecificElection(elecId) {
+      await fetch(`${API_BASE}/api/admin/elections/${elecId}/close`, {
+        method: 'POST'
+      });
+      loadAdminDashboard();
+    }
+  </script>
+</body>
+</html>

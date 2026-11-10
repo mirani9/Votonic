@@ -1,168 +1,102 @@
-const { spawn } = require('child_process');
-const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
-let hasFailures = false;
+﻿const http = require('http');
+const Database = require('better-sqlite3');
+const Redis = require('ioredis');
+const path = require('path');
 
-function assert(condition, message) {
-  if (condition) {
-    console.log('[PASS] ' + message);
-  } else {
-    console.error('[FAIL] ' + message);
-    hasFailures = true;
-  }
+const redis = new Redis({ host: '127.0.0.1', port: 6379 });
+const db = new Database(path.join(__dirname, 'votecore.db'));
+
+function makeVoteRequest(voterId, candidateId, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const data = JSON.stringify({ voter_id: voterId, candidate_id: candidateId });
+    const req = http.request('http://localhost:3000/api/vote', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data),
+        ...headers
+      }
+    }, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(body || '{}') }));
+    });
+    req.on('error', reject);
+    req.write(data);
+    req.end();
+  });
 }
 
 async function runTests() {
-  console.log('====================================================');
-  console.log('🧪 VOTECORE HARDENED REGRESSION & INTEGRITY SUITE');
-  console.log('====================================================');
+  console.log('==================================================');
+  console.log('[VOTECORE Comprehensive Test Suite - Experiments 1-11]');
+  console.log('==================================================\n');
 
-  await fetch('http://127.0.0.1:3000/api/v1/poll/reset', { method: 'POST' });
-  await sleep(150);
+  let pass = 0;
+  let fail = 0;
 
-  // 1. INVALID CANDIDATE REJECTION
-  console.log('\n--- 1. Backend Candidate Validation ---');
-  const resInvalid = await fetch('http://127.0.0.1:3000/api/v1/poll/vote', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ candidateId: 'Alex Rivera', userId: 'user_invalid_1' })
-  });
-  assert(resInvalid.status === 400, '1.1 Reject unknown candidate (Alex Rivera) with HTTP 400');
+  // Test 1: Invalid Candidate Check
+  console.log('[Test 1] Submitting vote for non-existent candidate...');
+  const t1 = await makeVoteRequest('voter_invalid_cand', 'c999');
+  if (t1.status === 404) { console.log(' -> PASSED (404 Not Found)'); pass++; }
+  else { console.log(` -> FAILED (Status: ${t1.status})`); fail++; }
 
-  // 2. CONCURRENT RATE LIMITER BOUNDARY TEST
-  console.log('\n--- 2. Atomic Rate Limiter Concurrency Boundary ---');
-  const rateLimitReqs = Array.from({ length: 10 }).map((_, i) => 
-    fetch('http://127.0.0.1:3000/api/v1/poll/vote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ candidateId: 'Sophia Chen', userId: `user_rate_${i}` })
-    })
-  );
-  const rateLimitResponses = await Promise.all(rateLimitReqs);
-  const allowedCount = rateLimitResponses.filter(r => r.status === 200).length;
-  const blockedCount = rateLimitResponses.filter(r => r.status === 429).length;
+  // Test 2: Invalid Voter ID Format
+  console.log('\n[Test 2] Submitting vote with malformed voter_id...');
+  const t2 = await makeVoteRequest('a', 'c1');
+  if (t2.status === 400) { console.log(' -> PASSED (400 Bad Request)'); pass++; }
+  else { console.log(` -> FAILED (Status: ${t2.status})`); fail++; }
 
-  assert(allowedCount === 5, `2.1 Exactly 5 boundary requests allowed (Got: ${allowedCount})`);
-  assert(blockedCount === 5, `2.2 Exactly 5 boundary requests rate-limited (Got: ${blockedCount})`);
-
-  // Clear rate limits for subsequent test steps
-  await fetch('http://127.0.0.1:3000/api/v1/poll/reset', { method: 'POST' });
-  await sleep(100);
-
-  // 3. MULTI-PROCESS LOCK CONTENTION & STALE OWNER PROTECTION
-  console.log('\n--- 3. Multi-Process Lock & Stale Release Verification ---');
-  const proc2 = spawn('node', ['server.js'], { 
-    env: { ...process.env, PORT: '3001', DB_FILE: './votecore_test.db', NODE_ENV: 'test' } 
-  });
-  await sleep(1500);
-
-  // Simultaneous lock requests across Process 1 (Port 3000) and Process 2 (Port 3001)
-  const p1Close = fetch('http://127.0.0.1:3000/api/v1/poll/close', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ttlMs: 1000 })
-  });
-  const p2Close = fetch('http://127.0.0.1:3001/api/v1/poll/close', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ttlMs: 1000 })
-  });
-
-  const [resProc1, resProc2] = await Promise.all([p1Close, p2Close]);
-  const bodyProc1 = await resProc1.json();
-  const bodyProc2 = await resProc2.json();
-
-  const proc1Won = resProc1.status === 200 && resProc2.status === 409;
-  const proc2Won = resProc1.status === 409 && resProc2.status === 200;
-  assert(proc1Won || proc2Won, '3.1 Distributed Mutex: Exactly 1 process acquired lock (200), 1 rejected (409)');
-
-  const winnerPort = proc1Won ? 3000 : 3001;
-  const winnerToken = proc1Won ? bodyProc1.ownerToken : bodyProc2.ownerToken;
-
-  // Wait for lock TTL expiration
-  await sleep(1200);
-
-  // Process 2 acquires NEW lock after expiration
-  const p2Reacquire = await fetch('http://127.0.0.1:3001/api/v1/poll/close', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ttlMs: 3000 })
-  });
-  assert(p2Reacquire.status === 200, '3.2 New owner re-acquired lock after expiration');
-
-  // Old owner token attempts release
-  const staleRelease = await fetch(`http://127.0.0.1:${winnerPort}/api/v1/poll/release-lock`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ownerToken: winnerToken })
-  });
-  const staleReleaseBody = await staleRelease.json();
-  assert(staleReleaseBody.success === false, '3.3 Stale owner token cannot release new owner lock');
-
-  // Shared Poll Closed Verification across both processes
-  const voteOnProc2 = await fetch('http://127.0.0.1:3001/api/v1/poll/vote', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ candidateId: 'Sophia Chen', userId: 'user_closed_test' })
-  });
-  assert(voteOnProc2.status === 403, '3.4 Shared persistent poll closure recognized across processes (HTTP 403)');
-
-  proc2.kill();
-
-  // Reset poll status for worker recovery step
-  await fetch('http://127.0.0.1:3000/api/v1/poll/reset', { method: 'POST' });
-  await sleep(100);
-
-  // 4. WORKER RECOVERY, QUEUE BUFFERING & PERSISTENCE EVIDENCE
-  console.log('\n--- 4. Worker Fault Recovery & Publisher Confirms ---');
-  // Detach consumer
-  await fetch('http://127.0.0.1:3000/api/v1/worker/toggle', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ active: false })
-  });
-
-  const userIdRecovery = 'user_recovery_' + Date.now();
-  const vRes = await fetch('http://127.0.0.1:3000/api/v1/poll/vote', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ candidateId: 'Marcus Vance', userId: userIdRecovery })
-  });
-  const vData = await vRes.json();
-  assert(vRes.status === 200 && vData.voteId, '4.1 Ingestion accepted with Publisher Confirm while consumer offline');
-
-  const mQueue = await (await fetch('http://127.0.0.1:3000/api/v1/metrics')).json();
-  assert(mQueue.lifecycle.queued === 1 && mQueue.lifecycle.pending === 1, '4.2 Message buffered in AMQP queue (queued=1, pending=1)');
-
-  // Re-attach consumer
-  await fetch('http://127.0.0.1:3000/api/v1/worker/toggle', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ active: true })
-  });
-
-  let verifiedDb = false;
-  let record = null;
-  for (let i = 0; i < 15; i++) {
-    await sleep(200);
-    const verify = await (await fetch('http://127.0.0.1:3000/api/v1/db-verify/' + vData.voteId)).json();
-    if (verify.exists) {
-      verifiedDb = true;
-      record = verify.record;
-      break;
-    }
+  // Test 3: Concurrency Duplicate Guard & Lock Safety
+  console.log('\n[Test 3] Executing 20 concurrent requests for same voter (voter_concur_1)...');
+  const reqs = [];
+  for (let i = 0; i < 20; i++) {
+    reqs.push(makeVoteRequest('voter_concur_1', 'c1'));
   }
+  await Promise.all(reqs);
+  await new Promise(r => setTimeout(r, 1000));
 
-  assert(verifiedDb, '4.3 Worker recovered and persisted exact vote ID to SQLite');
-  console.log('Database Evidence Record:', JSON.stringify(record));
+  const dbCount = db.prepare('SELECT COUNT(*) as cnt FROM votes WHERE voter_id = ?').get('voter_concur_1').cnt;
+  if (dbCount === 1) { console.log(` -> PASSED (DB Row Count: ${dbCount})`); pass++; }
+  else { console.log(` -> FAILED (DB Row Count: ${dbCount})`); fail++; }
 
-  console.log('====================================================');
-  if (hasFailures) {
-    console.error('❌ HARDENED SUITE FAILED');
-    process.exit(1);
-  } else {
-    console.log('🎉 ALL HARDENED SYSTEM & REGRESSION CHECKS PASSED!');
-  }
-  console.log('====================================================');
+  // Test 4: Sequential Duplicate Submission
+  console.log('\n[Test 4] Submitting duplicate vote sequentially for voter_concur_1...');
+  const t4 = await makeVoteRequest('voter_concur_1', 'c1');
+  if (t4.status === 409) { console.log(' -> PASSED (409 Conflict Received)'); pass++; }
+  else { console.log(` -> FAILED (Status: ${t4.status})`); fail++; }
+
+  // Test 5: Redis Flush & Leaderboard Auto-Rebuild
+  console.log('\n[Test 5] Testing Redis cache flush & auto-rebuild...');
+  await redis.flushall();
+  const reconcileRes = await new Promise((resolve) => {
+    http.get('http://localhost:3000/admin/reconcile', (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve(JSON.parse(data)));
+    });
+  });
+  
+  let driftSum = 0;
+  reconcileRes.report.forEach(r => driftSum += Math.abs(r.drift));
+  if (driftSum === 0) { console.log(' -> PASSED (Zero Drift Verified)'); pass++; }
+  else { console.log(` -> FAILED (Drift Detected: ${driftSum})`); fail++; }
+
+  // Test 6: Stale Owner Lock Release (Lua)
+  console.log('\n[Test 6] Verifying Stale Lock Release Protection via Lua...');
+  await redis.set('lock:voter:test_owner_key', 'owner_A', 'PX', 5000);
+  const luaScript = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+  
+  const staleRelease = await redis.eval(luaScript, 1, 'lock:voter:test_owner_key', 'owner_STALE');
+  const validRelease = await redis.eval(luaScript, 1, 'lock:voter:test_owner_key', 'owner_A');
+
+  if (staleRelease === 0 && validRelease === 1) { console.log(' -> PASSED (Stale Release Protected)'); pass++; }
+  else { console.log(' -> FAILED (Lock token validation failed)'); fail++; }
+
+  console.log('\n==================================================');
+  console.log(`TOTAL TESTS: ${pass + fail} | PASSED: ${pass} | FAILED: ${fail}`);
+  console.log('==================================================\n');
+  process.exit(fail > 0 ? 1 : 0);
 }
 
 runTests();

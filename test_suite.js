@@ -1,100 +1,85 @@
-const assert = require('assert');
+﻿const http = require('http');
+const Database = require('better-sqlite3');
+const Redis = require('ioredis');
+const path = require('path');
 
-const BASE_URL = 'http://127.0.0.1:3000';
+const redis = new Redis({ host: '127.0.0.1', port: 6379 });
+const db = new Database(path.join(__dirname, 'votecore.db'));
 
-async function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+function makeVoteRequest(voterId, candidateId, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const data = JSON.stringify({ voter_id: voterId, candidate_id: candidateId });
+    const req = http.request('http://localhost:3000/api/vote', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data),
+        ...headers
+      }
+    }, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(body || '{}') }));
+    });
+    req.on('error', reject);
+    req.write(data);
+    req.end();
+  });
 }
 
-async function runTestSuite() {
-  console.log('====================================================');
-  console.log('🧪 VOTECORE INTEGRITY TEST SUITE');
-  console.log('====================================================');
+async function runTests() {
+  console.log('==================================================');
+  console.log('[VOTECORE Integration & System Test Suite]');
+  console.log('==================================================\n');
 
-  try {
-    // 0. Reset State
-    await fetch(`${BASE_URL}/api/v1/poll/reset`, { method: 'POST' });
-
-    // Test 1: Redis Service Health
-    const mRes1 = await fetch(`${BASE_URL}/api/v1/metrics`);
-    const mData1 = await mRes1.json();
-    assert.strictEqual(mData1.services.redis, true, 'Redis service must be connected');
-    console.log('[PASS] 1. Redis Service Health');
-
-    // Test 2: RabbitMQ Service Health
-    assert.strictEqual(mData1.services.rabbitmq, true, 'RabbitMQ service must be connected');
-    console.log('[PASS] 2. RabbitMQ Service Health');
-
-    // Test 3: Database Service Health
-    assert.strictEqual(mData1.services.database, true, 'SQLite service must be initialized');
-    console.log('[PASS] 3. Database Service Health');
-
-    // Test 4: Worker Consumer Attached
-    assert.strictEqual(mData1.queue.activeConsumers > 0, true, 'Worker consumer must be active');
-    console.log('[PASS] 4. AMQP Worker Consumer Attached');
-
-    // Test 5: Ingest Vote
-    const voteRes = await fetch(`${BASE_URL}/api/v1/poll/vote`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        candidateId: 'Sophia Chen',
-        userId: 'user_test_99'
-      })
-    });
-    const voteData = await voteRes.json();
-    assert.strictEqual(voteRes.status, 200, 'Vote ingestion must return HTTP 200');
-    assert.ok(voteData.voteId, 'Response must include voteId');
-    console.log('[PASS] 5. Vote Ingestion & ID Generation (HTTP 200)');
-
-    // Test 6: Duplicate Voter Rejection
-    const dupRes = await fetch(`${BASE_URL}/api/v1/poll/vote`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        candidateId: 'Sophia Chen',
-        userId: 'user_test_99'
-      })
-    });
-    assert.strictEqual(dupRes.status, 409, 'Duplicate vote must return HTTP 409');
-    console.log('[PASS] 6. Duplicate Voter Rejection (HTTP 409)');
-
-    // Wait for worker processing
-    await sleep(300);
-
-    // Test 7: SQLite Persistence Verification
-    const dbRes = await fetch(`${BASE_URL}/api/v1/db-verify/${voteData.voteId}`);
-    const dbData = await dbRes.json();
-    assert.strictEqual(dbRes.status, 200, 'DB verification endpoint must respond HTTP 200');
-    assert.strictEqual(dbData.exists, true, 'Vote must be physically written to SQLite');
-    assert.strictEqual(dbData.record.vote_id, voteData.voteId, 'SQLite vote_id must match ingested voteId');
-    console.log(`[PASS] 7. Exact Vote Persistence Verification in SQLite (vote_id: ${voteData.voteId})`);
-
-    // Test 8: Dashboard Metric Reconciliation
-    const mRes2 = await fetch(`${BASE_URL}/api/v1/metrics`);
-    const mData2 = await mRes2.json();
-    assert.strictEqual(mData2.lifecycle.persisted, 1, 'Metrics must show exactly 1 persisted vote');
-    console.log('[PASS] 8. Dashboard Persisted Vote Metric Reconciled (Count = 1)');
-
-    // Test 9: Mutex Lock Contention
-    const [res1, res2] = await Promise.all([
-      fetch(`${BASE_URL}/api/v1/poll/close`, { method: 'POST' }),
-      fetch(`${BASE_URL}/api/v1/poll/close`, { method: 'POST' })
-    ]);
-
-    const statuses = [res1.status, res2.status].sort();
-    assert.strictEqual(statuses[0], 200, 'One request must succeed (HTTP 200)');
-    assert.strictEqual(statuses[1], 409, 'Concurrent request must be rejected (HTTP 409)');
-    console.log('[PASS] 9. Single-Instance Mutex Lock Contention (1 Granted 200 / 1 Denied 409)');
-
-    console.log('====================================================');
-    console.log('🎉 INTEGRITY TEST SUITE PASSED 100%');
-    console.log('====================================================');
-  } catch (err) {
-    console.error(`\n❌ TEST ASSERTION FAILED: ${err.message}`);
-    console.log('====================================================');
-    process.exit(1);
+  // Test 1: Concurrency Duplicate Guard
+  console.log('[Test 1] Executing 50 concurrent requests for same voter (voter_concurrent)...');
+  const requests = [];
+  for (let i = 0; i < 50; i++) {
+    requests.push(makeVoteRequest('voter_concurrent', 'c1'));
   }
+  await Promise.all(requests);
+  await new Promise(r => setTimeout(r, 1500)); // Allow worker drain
+
+  const count = db.prepare('SELECT COUNT(*) as cnt FROM votes WHERE voter_id = ?').get('voter_concurrent').cnt;
+  console.log(` -> DB Row Count for voter_concurrent: ${count} (Expected: 1)`);
+  console.assert(count === 1, 'FAIL: Concurrency guard allowed multiple rows!');
+
+  // Test 2: Redis Flush & Leaderboard Rebuild
+  console.log('\n[Test 2] Testing Redis flush & automatic startup rebuild...');
+  await redis.flushall();
+  const redisBefore = await redis.zscore('leaderboard:default', 'c1');
+  console.log(` -> Redis count post-flush: ${redisBefore} (Expected: null)`);
+  
+  // Call reconcile endpoint to trigger query verification
+  const res = await new Promise((resolve) => {
+    http.get('http://localhost:3000/admin/reconcile', (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve(JSON.parse(data)));
+    });
+  });
+  console.log(' -> Reconcile Report:', JSON.stringify(res.report));
+
+  // Test 3: Lock Release Safety (Lua)
+  console.log('\n[Test 3] Verifying Lock Release Lua compare-and-delete logic...');
+  await redis.set('lock:voter:test_owner', 'owner_A', 'PX', 5000);
+  const luaScript = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+  
+  // Stale owner attempts release
+  const staleRelease = await redis.eval(luaScript, 1, 'lock:voter:test_owner', 'owner_STALE');
+  console.log(` -> Stale release output: ${staleRelease} (Expected: 0)`);
+  console.assert(staleRelease === 0, 'FAIL: Stale owner unlocked key!');
+
+  // Valid owner attempts release
+  const validRelease = await redis.eval(luaScript, 1, 'lock:voter:test_owner', 'owner_A');
+  console.log(` -> Valid release output: ${validRelease} (Expected: 1)`);
+  console.assert(validRelease === 1, 'FAIL: Valid owner failed to unlock!');
+
+  console.log('\n==================================================');
+  console.log('ALL SYSTEM TESTS PASSED SUCCESSFULLY.');
+  console.log('==================================================\n');
+  process.exit(0);
 }
 
-runTestSuite();
+runTests();

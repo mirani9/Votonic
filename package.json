@@ -1,20 +1,16 @@
 {
   "name": "flash-poll-system",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Distributed Flash Poll System - Pure JS Engine",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "amqplib": "^2.2.1",
-    "express": "^5.3.0",
-    "ioredis": "^6.0.0",
-    "sqlite3": "^6.0.1",
-    "uuid": "^14.0.3"
+    "amqplib": "^2.3.1",
+    "better-sqlite3": "^13.0.3",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "ioredis": "^6.0.0"
   }
 }

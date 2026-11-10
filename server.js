@@ -116,20 +116,22 @@ app.use('/api/v1', productsRouter);
 // AUTHENTICATION API
 app.post('/api/auth/login', (req, res) => {
   const { user_id, dob, role } = req.body;
-  if (!user_id || !dob) {
-    return res.status(400).json({ error: "User ID and Date of Birth (DOB) are required." });
+  if (!user_id || !dob || !role) {
+    return res.status(400).json({ error: 'User ID, DOB, and Role are required.' });
   }
+  try {
+    const cleanId = String(user_id).trim();
+    const cleanDob = String(dob).trim();
+    const cleanRole = String(role).trim().toLowerCase();
 
-  const user = db.prepare('SELECT * FROM users WHERE id = ? AND dob = ?').get(user_id, dob);
-  if (!user) {
-    return res.status(401).json({ error: "Invalid login credentials. Please check your ID and DOB." });
+    const user = db.prepare('SELECT * FROM users WHERE UPPER(id) = UPPER(?) AND dob = ? AND LOWER(role) = ?').get(cleanId, cleanDob, cleanRole);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid ID, Date of Birth, or Role.' });
+    }
+    return res.json({ success: true, user });
+  } catch (err) {
+    return res.status(500).json({ error: 'Database authentication failed.' });
   }
-
-  if (role && user.role !== role && user.role !== 'ADMIN') {
-    return res.status(403).json({ error: `Access denied. Account is registered as ${user.role}, not ${role}.` });
-  }
-
-  res.json({ success: true, user: { id: user.id, name: user.name, role: user.role, department: user.department } });
 });
 
 // GET ACTIVE ELECTIONS

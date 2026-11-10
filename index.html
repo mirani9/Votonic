@@ -65,10 +65,10 @@
 <body>
 
   <div class="sidebar">
-    <div class="brand">&#127891; VOTONIC</div>
+    <div class="brand">🎓 VOTONIC</div>
     <div class="nav-group">
-      <div id="nav-home" class="nav-item active" onclick="navTo('home')">&#127963; Main Portals</div>
-      <div id="nav-previous-winners" class="nav-item" onclick="navTo('previous-winners')">&#127942; Previous Winners</div>
+      <div id="nav-home" class="nav-item active">🏛 Main Portals</div>
+      <div id="nav-previous-winners" class="nav-item">🏆 Previous Winners</div>
     </div>
   </div>
 
@@ -83,33 +83,33 @@
         <div class="grid-3">
           <div class="portal-card">
             <div>
-              <div class="portal-title">&#127891; 1. Student Portal</div>
+              <div class="portal-title">🎓 1. Student Portal</div>
               <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login with Student Roll ID &amp; DOB to cast your vote.</p>
             </div>
-            <button type="button" class="btn" onclick="navTo('login-student')">Student Login</button>
+            <button type="button" class="btn" id="btn-to-student">Student Login</button>
           </div>
 
           <div class="portal-card">
             <div>
-              <div class="portal-title">&#128221; 2. Candidate Portal</div>
+              <div class="portal-title">📝 2. Candidate Portal</div>
               <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login to submit nomination &amp; manifestos.</p>
             </div>
-            <button type="button" class="btn" onclick="navTo('login-candidate')">Candidate Login</button>
+            <button type="button" class="btn" id="btn-to-candidate">Candidate Login</button>
           </div>
 
           <div class="portal-card">
             <div>
-              <div class="portal-title">&#9881; 3. Administrative Portal</div>
+              <div class="portal-title">⚙ 3. Administrative Portal</div>
               <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Approve nominations &amp; close elections.</p>
             </div>
-            <button type="button" class="btn" onclick="navTo('login-admin')">Administrative Login</button>
+            <button type="button" class="btn" id="btn-to-admin">Administrative Login</button>
           </div>
         </div>
       </div>
 
       <!-- PREVIOUS WINNERS -->
       <div id="section-previous-winners" class="view-section">
-        <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">&#127942; Certified Previous Election Winners</h1>
+        <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">🏆 Certified Previous Election Winners</h1>
         <div class="card">
           <div id="previous-winners-container">Loading certified winners...</div>
         </div>
@@ -118,7 +118,7 @@
       <!-- STUDENT AUTH -->
       <div id="section-login-student" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
-          <div class="card-title">&#128274; Student Portal Authentication</div>
+          <div class="card-title">🔒 Student Portal Authentication</div>
           <div class="form-group">
             <label>Student Roll ID</label>
             <input type="text" id="stu-id" class="form-control" value="STU101">
@@ -127,7 +127,7 @@
             <label>Date of Birth (DOB)</label>
             <input type="date" id="stu-dob" class="form-control" value="2003-05-14">
           </div>
-          <button type="button" class="btn" onclick="loginUser('STUDENT')">Login to Vote</button>
+          <button type="button" class="btn" id="btn-login-student">Login to Vote</button>
           <div id="stu-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
         </div>
       </div>
@@ -136,16 +136,16 @@
       <div id="section-dashboard-student" class="view-section">
         <h2 style="margin-bottom: 20px;">Official Student Voting Portal</h2>
         <div class="card">
-          <div class="card-title">&#128499; Cast Official Ballot</div>
+          <div class="card-title">🗳 Cast Official Ballot</div>
           <div class="form-group">
             <label>Select Active Campus Election</label>
-            <select id="vote-election-id" class="form-control" onchange="loadCandidatesForVote()"></select>
+            <select id="vote-election-id" class="form-control"></select>
           </div>
           <div class="form-group">
             <label>Select Approved Candidate</label>
             <select id="vote-candidate-id" class="form-control"></select>
           </div>
-          <button type="button" class="btn" onclick="castBallot()">Submit Secure Ballot</button>
+          <button type="button" class="btn" id="btn-cast-vote">Submit Secure Ballot</button>
           <div id="vote-response" style="margin-top: 15px; font-size: 13px;"></div>
         </div>
       </div>
@@ -153,7 +153,7 @@
       <!-- CANDIDATE AUTH -->
       <div id="section-login-candidate" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
-          <div class="card-title">&#128274; Candidate Portal Authentication</div>
+          <div class="card-title">🔒 Candidate Portal Authentication</div>
           <div class="form-group">
             <label>Candidate ID</label>
             <input type="text" id="cand-user-id" class="form-control" value="STU102">
@@ -162,7 +162,7 @@
             <label>Date of Birth (DOB)</label>
             <input type="date" id="cand-dob" class="form-control" value="2004-08-22">
           </div>
-          <button type="button" class="btn" onclick="loginUser('CANDIDATE')">Login Candidate Portal</button>
+          <button type="button" class="btn" id="btn-login-candidate">Login Candidate Portal</button>
           <div id="cand-login-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
         </div>
       </div>
@@ -171,7 +171,7 @@
       <div id="section-dashboard-candidate" class="view-section">
         <h2 style="margin-bottom: 20px;">Candidate Nomination Request Portal</h2>
         <div class="card">
-          <div class="card-title">&#128229; Submit Nomination Request</div>
+          <div class="card-title">📥 Submit Nomination Request</div>
           <div class="form-group">
             <label>Target Election</label>
             <select id="cand-election-id" class="form-control"></select>
@@ -184,7 +184,7 @@
             <label>Campaign Manifesto &amp; Key Goals</label>
             <textarea id="cand-manifesto" class="form-control" rows="3">Enhance campus wifi coverage and extend library hours during exams.</textarea>
           </div>
-          <button type="button" class="btn" onclick="submitNominationRequest()">Submit Nomination Request</button>
+          <button type="button" class="btn" id="btn-submit-nomination">Submit Nomination Request</button>
           <div id="cand-response" style="margin-top: 15px; font-size: 13px;"></div>
         </div>
       </div>
@@ -192,7 +192,7 @@
       <!-- ADMIN AUTH -->
       <div id="section-login-admin" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
-          <div class="card-title">&#128274; Administrative Portal Authentication</div>
+          <div class="card-title">🔒 Administrative Portal Authentication</div>
           <div class="form-group">
             <label>Administrator ID</label>
             <input type="text" id="admin-user-id" class="form-control" value="ADMIN01">
@@ -201,7 +201,7 @@
             <label>Date of Birth (DOB)</label>
             <input type="date" id="admin-dob" class="form-control" value="1985-01-01">
           </div>
-          <button type="button" class="btn" onclick="loginUser('ADMIN')">Login Administrator Portal</button>
+          <button type="button" class="btn" id="btn-login-admin">Login Administrator Portal</button>
           <div id="admin-login-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
         </div>
       </div>
@@ -212,7 +212,7 @@
 
         <!-- USER REGISTRATION CARD -->
         <div class="card">
-          <div class="card-title">&#128104;&#8205;&#128188; Register New User Account</div>
+          <div class="card-title">👤 Register New User Account</div>
           <div class="grid-2">
             <div class="form-group">
               <label>User / Roll ID</label>
@@ -235,27 +235,27 @@
               </select>
             </div>
           </div>
-          <button type="button" class="btn btn-success" onclick="registerUserByAdmin()">Create User Account</button>
+          <button type="button" class="btn btn-success" id="btn-create-user">Create User Account</button>
           <div id="reg-user-response" style="margin-top: 12px; font-size: 13px;"></div>
         </div>
         
         <!-- ELECTION POST CREATION CARD -->
         <div class="card">
-          <div class="card-title">&#10792; Launch New Election Post</div>
+          <div class="card-title">➕ Launch New Election Post</div>
           <div class="form-group">
             <label>Election Title / Post Name</label>
             <input type="text" id="new-elec-title" class="form-control" placeholder="e.g. Vice President Election 2026">
           </div>
           <div class="form-group">
-            <label>Description & Scope</label>
+            <label>Description &amp; Scope</label>
             <textarea id="new-elec-desc" class="form-control" rows="2" placeholder="Brief description of responsibilities..."></textarea>
           </div>
-          <button type="button" class="btn btn-success" onclick="createNewElection()">Launch Election</button>
+          <button type="button" class="btn btn-success" id="btn-create-election">Launch Election</button>
           <div id="create-elec-response" style="margin-top: 12px; font-size: 13px;"></div>
         </div>
 
         <div class="card">
-          <div class="card-title">&#128202; Candidate Nomination Requests</div>
+          <div class="card-title">📊 Candidate Nomination Requests</div>
           <table id="admin-pending-table">
             <thead>
               <tr><th>Candidate Name</th><th>Election ID</th><th>Manifesto Summary</th><th>Actions</th></tr>
@@ -265,7 +265,7 @@
         </div>
 
         <div class="card">
-          <div class="card-title">&#128274; Manage &amp; Close Specific Elections</div>
+          <div class="card-title">🔒 Manage &amp; Close Specific Elections</div>
           <table id="admin-elections-table">
             <thead>
               <tr><th>Election Title</th><th>Status</th><th>Targeted Action</th></tr>
@@ -300,6 +300,24 @@
         document.getElementById('nav-home').classList.add('active');
       }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('nav-home').addEventListener('click', () => navTo('home'));
+      document.getElementById('nav-previous-winners').addEventListener('click', () => navTo('previous-winners'));
+
+      document.getElementById('btn-to-student').addEventListener('click', () => navTo('login-student'));
+      document.getElementById('btn-to-candidate').addEventListener('click', () => navTo('login-candidate'));
+      document.getElementById('btn-to-admin').addEventListener('click', () => navTo('login-admin'));
+
+      document.getElementById('btn-login-student').addEventListener('click', () => loginUser('STUDENT'));
+      document.getElementById('btn-login-candidate').addEventListener('click', () => loginUser('CANDIDATE'));
+      document.getElementById('btn-login-admin').addEventListener('click', () => loginUser('ADMIN'));
+
+      document.getElementById('btn-cast-vote').addEventListener('click', castBallot);
+      document.getElementById('btn-submit-nomination').addEventListener('click', submitNominationRequest);
+      document.getElementById('btn-create-user').addEventListener('click', registerUserByAdmin);
+      document.getElementById('btn-create-election').addEventListener('click', createNewElection);
+    });
 
     async function loginUser(role) {
       let user_id, dob, errEl;
@@ -393,7 +411,7 @@
           container.innerHTML = winners.map(w => 
             '<div style="padding:16px; background:#0b0f19; border-radius:8px; border:1px solid var(--border); margin-bottom:12px;">' +
               '<div style="font-size:12px; color:var(--primary); font-weight:700;">' + w.election_title + '</div>' +
-              '<div style="font-size:16px; font-weight:800; color:var(--success);">&#129351; Elected Winner: ' + w.winner_name + '</div>' +
+              '<div style="font-size:16px; font-weight:800; color:var(--success);">🏆 Elected Winner: ' + w.winner_name + '</div>' +
               '<div style="font-size:13px; color:var(--text); margin-top:4px;">Won with <strong>' + w.winning_percentage + '%</strong> of certified votes.</div>' +
             '</div>'
           ).join('');
@@ -410,6 +428,7 @@
       const selectEl = document.getElementById('vote-election-id');
       selectEl.innerHTML = activeElections.map(e => '<option value="' + e.id + '">' + e.title + '</option>').join('');
       loadCandidatesForVote();
+      selectEl.onchange = loadCandidatesForVote;
     }
 
     async function loadCandidatesForVote() {

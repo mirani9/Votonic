@@ -52,7 +52,7 @@ db.exec(`
   );
 `);
 
-// Auto-seed / Repair demo accounts cleanly
+// Always ensure demo credentials are seeded & active
 const seedUser = db.prepare('INSERT OR REPLACE INTO users (id, name, dob, role) VALUES (?, ?, ?, ?)');
 seedUser.run('STU101', 'Aarav Sharma', '2003-05-14', 'student');
 seedUser.run('STU102', 'Priya Patel', '2004-08-22', 'candidate');
@@ -80,7 +80,7 @@ if (candCount.count === 0) {
   );
 }
 
-// 1. Case-Insensitive Auth Endpoint (Fixes Login Error)
+// 1. Case-Insensitive Login API
 app.post('/api/auth/login', (req, res) => {
   const { user_id, dob, role } = req.body;
   if (!user_id || !dob || !role) {
@@ -103,7 +103,7 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
-// 2. Admin User Creation Endpoint
+// 2. Admin User Generator API
 app.post('/api/admin/users/create', (req, res) => {
   const { user_id, name, dob, role } = req.body;
   if (!user_id || !name || !dob || !role) {

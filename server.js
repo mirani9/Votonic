@@ -290,4 +290,24 @@ app.get('/api/elections/previous-winners', (req, res) => {
   res.json({ success: true, data: winners });
 });
 
+
+// Admin route to create new users (Student, Candidate, Admin)
+app.post('/api/admin/users/create', (req, res) => {
+  const { user_id, name, dob, role } = req.body;
+  if (!user_id || !name || !dob || !role) {
+    return res.status(400).json({ error: 'All fields (User ID, Name, DOB, Role) are required.' });
+  }
+
+  try {
+    const stmt = db.prepare('INSERT INTO users (id, name, dob, role) VALUES (?, ?, ?, ?)');
+    stmt.run(user_id, name, dob, role);
+    return res.json({ success: true, message: `User ${user_id} registered successfully as ${role}.` });
+  } catch (err) {
+    if (err.message.includes('UNIQUE constraint failed')) {
+      return res.status(400).json({ error: 'A user with this User ID already exists.' });
+    }
+    return res.status(500).json({ error: 'Failed to create user.' });
+  }
+});
+
 app.listen(PORT, () => console.log(`[VOTONIC Engine] Running on port ${PORT}`));

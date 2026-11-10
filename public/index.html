@@ -63,7 +63,7 @@
 </head>
 <body>
 
-  <!-- Navigation Sidebar with HTML-Encoded Emojis (No UTF-8 Corruption) -->
+  <!-- Navigation Sidebar -->
   <div class="sidebar">
     <div class="brand">&#127891; VOTONIC</div>
     <div class="nav-group">
@@ -100,14 +100,14 @@
           <div class="portal-card">
             <div>
               <div class="portal-title">&#9881; 3. Administrative Portal</div>
-              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login as Election Administrator to approve nominations and close specific elections.</p>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login as Election Administrator to approve nominations, generate accounts & close elections.</p>
             </div>
             <button class="btn" onclick="showSection('login-admin')">Administrative Login</button>
           </div>
         </div>
       </div>
 
-      <!-- 2. PUBLIC PREVIOUS WINNERS -->
+      <!-- 2. PREVIOUS WINNERS -->
       <div id="section-previous-winners" class="view-section">
         <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">&#127942; Certified Previous Election Winners</h1>
         <div class="card">
@@ -207,6 +207,35 @@
       <div id="section-dashboard-admin" class="view-section">
         <h2 style="margin-bottom: 20px;">Administrator Governance Control Center</h2>
         
+        <!-- NEW USER REGISTRATION TAB -->
+        <div class="card">
+          <div class="card-title">&#128100; Register New User (Generate ID & DOB Credentials)</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label>User ID / Roll Number</label>
+              <input type="text" id="new-user-id" class="form-control" placeholder="e.g. STU105">
+            </div>
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="new-user-name" class="form-control" placeholder="e.g. Rahul Sharma">
+            </div>
+            <div class="form-group">
+              <label>Date of Birth (DOB)</label>
+              <input type="date" id="new-user-dob" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <select id="new-user-role" class="form-control">
+                <option value="STUDENT">Student (Voter)</option>
+                <option value="CANDIDATE">Candidate</option>
+                <option value="ADMIN">Administrator</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn" onclick="createNewUser()">Create User Account</button>
+          <div id="create-user-response" style="margin-top: 12px; font-size: 13px;"></div>
+        </div>
+
         <div class="card">
           <div class="card-title">&#128202; Candidate Nomination Requests (Approve / Reject)</div>
           <table id="admin-pending-table">
@@ -293,6 +322,33 @@
         }
       } catch (err) {
         errEl.innerText = 'Login error.';
+      }
+    }
+
+    async function createNewUser() {
+      const user_id = document.getElementById('new-user-id').value;
+      const name = document.getElementById('new-user-name').value;
+      const dob = document.getElementById('new-user-dob').value;
+      const role = document.getElementById('new-user-role').value;
+      const box = document.getElementById('create-user-response');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/users/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id, name, dob, role })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          box.innerHTML = `<span style="color:var(--success)">${data.message}</span>`;
+          document.getElementById('new-user-id').value = '';
+          document.getElementById('new-user-name').value = '';
+          document.getElementById('new-user-dob').value = '';
+        } else {
+          box.innerHTML = `<span style="color:var(--danger)">${data.error}</span>`;
+        }
+      } catch (err) {
+        box.innerHTML = '<span style="color:var(--danger)">Failed to register user.</span>';
       }
     }
 

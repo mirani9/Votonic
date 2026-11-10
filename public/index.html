@@ -48,7 +48,7 @@
     .form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
     .form-control { width: 100%; padding: 11px 14px; background: #0b0f19; border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; }
     
-    .btn { padding: 11px 20px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .btn { padding: 11px 20px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; display: inline-block; text-align: center; }
     .btn:hover { background: var(--primary-hover); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
@@ -74,37 +74,39 @@
   <div class="main-wrapper">
     <div class="container">
 
+      <!-- LANDING SECTION -->
       <div id="section-home" class="view-section active">
-        <h1 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;">Campus Elections & Governance</h1>
+        <h1 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;">Campus Elections &amp; Governance</h1>
         <p style="color: var(--muted); font-size: 14px;">Select your respective portal below to log in.</p>
 
         <div class="grid-3">
           <div class="portal-card">
             <div>
               <div class="portal-title">&#127891; 1. Student Portal</div>
-              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login with Student Roll ID & DOB to cast your vote.</p>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login with Student Roll ID &amp; DOB to cast your vote.</p>
             </div>
-            <button class="btn" onclick="showSection('login-student')">Student Login</button>
+            <button type="button" class="btn" onclick="showSection('login-student')">Student Login</button>
           </div>
 
           <div class="portal-card">
             <div>
               <div class="portal-title">&#128221; 2. Candidate Portal</div>
-              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login to submit nomination & manifestos.</p>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Login to submit nomination &amp; manifestos.</p>
             </div>
-            <button class="btn" onclick="showSection('login-candidate')">Candidate Login</button>
+            <button type="button" class="btn" onclick="showSection('login-candidate')">Candidate Login</button>
           </div>
 
           <div class="portal-card">
             <div>
               <div class="portal-title">&#9881; 3. Administrative Portal</div>
-              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Approve nominations & close elections.</p>
+              <p style="font-size: 13px; color: var(--muted); margin-top: 10px;">Approve nominations &amp; close elections.</p>
             </div>
-            <button class="btn" onclick="showSection('login-admin')">Administrative Login</button>
+            <button type="button" class="btn" onclick="showSection('login-admin')">Administrative Login</button>
           </div>
         </div>
       </div>
 
+      <!-- PREVIOUS WINNERS -->
       <div id="section-previous-winners" class="view-section">
         <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 15px;">&#127942; Certified Previous Election Winners</h1>
         <div class="card">
@@ -112,6 +114,7 @@
         </div>
       </div>
 
+      <!-- STUDENT AUTH -->
       <div id="section-login-student" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
           <div class="card-title">&#128274; Student Portal Authentication</div>
@@ -123,11 +126,12 @@
             <label>Date of Birth (DOB)</label>
             <input type="date" id="stu-dob" class="form-control" value="2003-05-14">
           </div>
-          <button class="btn" onclick="loginUser('STUDENT')">Login to Vote</button>
+          <button type="button" class="btn" onclick="loginUser('STUDENT')">Login to Vote</button>
           <div id="stu-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
         </div>
       </div>
 
+      <!-- STUDENT DASHBOARD -->
       <div id="section-dashboard-student" class="view-section">
         <h2 style="margin-bottom: 20px;">Official Student Voting Portal</h2>
         <div class="card">
@@ -140,11 +144,12 @@
             <label>Select Approved Candidate</label>
             <select id="vote-candidate-id" class="form-control"></select>
           </div>
-          <button class="btn" onclick="castBallot()">Submit Secure Ballot</button>
+          <button type="button" class="btn" onclick="castBallot()">Submit Secure Ballot</button>
           <div id="vote-response" style="margin-top: 15px; font-size: 13px;"></div>
         </div>
       </div>
 
+      <!-- CANDIDATE AUTH -->
       <div id="section-login-candidate" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
           <div class="card-title">&#128274; Candidate Portal Authentication</div>
@@ -156,11 +161,12 @@
             <label>Date of Birth (DOB)</label>
             <input type="date" id="cand-dob" class="form-control" value="2004-08-22">
           </div>
-          <button class="btn" onclick="loginUser('CANDIDATE')">Login Candidate Portal</button>
+          <button type="button" class="btn" onclick="loginUser('CANDIDATE')">Login Candidate Portal</button>
           <div id="cand-login-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
         </div>
       </div>
 
+      <!-- CANDIDATE DASHBOARD -->
       <div id="section-dashboard-candidate" class="view-section">
         <h2 style="margin-bottom: 20px;">Candidate Nomination Request Portal</h2>
         <div class="card">
@@ -174,14 +180,15 @@
             <input type="text" id="cand-name" class="form-control" placeholder="e.g. Priya Patel">
           </div>
           <div class="form-group">
-            <label>Campaign Manifesto & Key Goals</label>
+            <label>Campaign Manifesto &amp; Key Goals</label>
             <textarea id="cand-manifesto" class="form-control" rows="3"></textarea>
           </div>
-          <button class="btn" onclick="submitNominationRequest()">Submit Nomination Request</button>
+          <button type="button" class="btn" onclick="submitNominationRequest()">Submit Nomination Request</button>
           <div id="cand-response" style="margin-top: 15px; font-size: 13px;"></div>
         </div>
       </div>
 
+      <!-- ADMIN AUTH -->
       <div id="section-login-admin" class="view-section">
         <div class="card" style="max-width: 440px; margin: 40px auto;">
           <div class="card-title">&#128274; Administrative Portal Authentication</div>
@@ -193,11 +200,12 @@
             <label>Date of Birth (DOB)</label>
             <input type="date" id="admin-dob" class="form-control" value="1985-01-01">
           </div>
-          <button class="btn" onclick="loginUser('ADMIN')">Login Administrator Portal</button>
+          <button type="button" class="btn" onclick="loginUser('ADMIN')">Login Administrator Portal</button>
           <div id="admin-login-error" style="margin-top: 12px; font-size: 13px; color: var(--danger);"></div>
         </div>
       </div>
 
+      <!-- ADMIN DASHBOARD -->
       <div id="section-dashboard-admin" class="view-section">
         <h2 style="margin-bottom: 20px;">Administrator Governance Control Center</h2>
         <div class="card">
@@ -211,7 +219,7 @@
         </div>
 
         <div class="card">
-          <div class="card-title">&#128274; Manage & Close Specific Elections</div>
+          <div class="card-title">&#128274; Manage &amp; Close Specific Elections</div>
           <table id="admin-elections-table">
             <thead>
               <tr><th>Election Title</th><th>Status</th><th>Targeted Action</th></tr>
@@ -229,7 +237,6 @@
     let currentUser = null;
 
     function showSection(sectionId) {
-      console.log('Navigating to section:', sectionId);
       const sections = document.querySelectorAll('.view-section');
       for (let i = 0; i < sections.length; i++) {
         sections[i].classList.remove('active');
@@ -270,7 +277,7 @@
         errEl = document.getElementById('admin-login-error');
       }
 
-      errEl.innerText = 'Authenticating...';
+      if (errEl) errEl.innerText = 'Authenticating...';
 
       try {
         const res = await fetch(API_BASE + '/api/auth/login', {
@@ -280,7 +287,7 @@
         });
         const data = await res.json();
         if (res.ok) {
-          errEl.innerText = '';
+          if (errEl) errEl.innerText = '';
           currentUser = data.user;
           if (role === 'STUDENT') {
             showSection('dashboard-student');
@@ -293,10 +300,10 @@
             loadAdminDashboard();
           }
         } else {
-          errEl.innerText = data.error || 'Authentication failed.';
+          if (errEl) errEl.innerText = data.error || 'Authentication failed.';
         }
       } catch (err) {
-        errEl.innerText = 'Connection error. Please try again.';
+        if (errEl) errEl.innerText = 'Connection error. Please try again.';
       }
     }
 
